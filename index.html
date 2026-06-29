@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Laporan Harian</title>
     
+    <!-- Google Fonts: Space Grotesk -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
     <!-- Tailwind CSS (via CDN - Aman untuk static hosting) -->
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -16,7 +21,7 @@
     
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: #F2F2F7;
             -webkit-tap-highlight-color: transparent;
         }
@@ -64,7 +69,7 @@
     </header>
 
     <!-- Main Content -->
-    <main id="app-container" class="p-4 max-w-2xl mx-auto space-y-4">
+    <main id="app-container" class="p-4 w-full md:max-w-3xl lg:max-w-5xl mx-auto space-y-4">
         <div id="empty-state" class="hidden text-center p-12 text-gray-400 bg-white rounded-2xl shadow-sm border border-gray-100">
             <i data-lucide="image" class="w-12 h-12 mx-auto mb-4 opacity-50"></i>
             <p>Belum ada laporan.</p>
@@ -75,11 +80,13 @@
     </main>
 
     <!-- Selection Bottom Bar -->
-    <div id="selection-bar" class="hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-40 flex justify-between items-center animate-slide-up">
-        <span id="selection-count" class="font-medium text-gray-700">0 laporan dipilih</span>
-        <div class="flex gap-3">
-            <button onclick="cancelSelection()" class="px-4 py-2 text-gray-500 font-medium hover:bg-gray-100 rounded-lg transition-colors">Batal</button>
-            <button onclick="exportSelected()" class="px-4 py-2 bg-[#007AFF] text-white font-medium rounded-lg hover:bg-blue-600 transition-colors shadow-sm">Export Doc</button>
+    <div id="selection-bar" class="hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-40 animate-slide-up">
+        <div class="w-full md:max-w-3xl lg:max-w-5xl mx-auto flex justify-between items-center">
+            <span id="selection-count" class="font-medium text-gray-700">0 laporan dipilih</span>
+            <div class="flex gap-3">
+                <button onclick="cancelSelection()" class="px-4 py-2 text-gray-500 font-medium hover:bg-gray-100 rounded-lg transition-colors">Batal</button>
+                <button onclick="exportSelected()" class="px-4 py-2 bg-[#007AFF] text-white font-medium rounded-lg hover:bg-blue-600 transition-colors shadow-sm">Export Doc</button>
+            </div>
         </div>
     </div>
 
@@ -91,7 +98,7 @@
     <!-- Add/Edit Modal -->
     <div id="form-modal" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
         <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeFormModal()"></div>
-        <div class="relative bg-white w-full max-w-2xl sm:rounded-2xl rounded-t-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-slide-up">
+        <div class="relative bg-white w-full md:max-w-3xl lg:max-w-4xl sm:rounded-2xl rounded-t-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-slide-up">
             <div class="flex justify-between items-center p-4 border-b border-gray-100">
                 <button onclick="closeFormModal()" class="text-gray-500 hover:text-gray-700"><i data-lucide="x" class="w-6 h-6"></i></button>
                 <h2 id="form-title" class="text-lg font-semibold">Laporan Baru</h2>
@@ -141,24 +148,47 @@
         <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeExportModal()"></div>
         <div class="relative bg-white w-full max-w-md sm:rounded-2xl rounded-t-2xl shadow-2xl overflow-hidden flex flex-col animate-slide-up p-5">
             <div class="flex justify-between items-center mb-4">
-                <h2 class="text-lg font-semibold">Export Laporan (Word)</h2>
+                <h2 class="text-lg font-semibold">Export & Sinkronisasi</h2>
                 <button onclick="closeExportModal()" class="text-gray-500 hover:text-gray-700"><i data-lucide="x" class="w-6 h-6"></i></button>
             </div>
-            <div class="space-y-6">
-                <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                    <h3 class="font-medium text-gray-800 mb-3 flex items-center gap-2"><i data-lucide="calendar" class="w-5 h-5 text-[#007AFF]"></i> Rekap Rentang Waktu</h3>
-                    <div class="flex gap-2 items-center mb-3">
-                        <input type="date" id="export-start" class="flex-1 bg-white border border-gray-200 rounded-lg p-2 text-sm outline-none focus:border-[#007AFF]" />
-                        <span class="text-gray-400">-</span>
-                        <input type="date" id="export-end" class="flex-1 bg-white border border-gray-200 rounded-lg p-2 text-sm outline-none focus:border-[#007AFF]" />
+            
+            <div class="space-y-6 overflow-y-auto max-h-[75vh] pr-1">
+                <!-- Word Export Section -->
+                <div>
+                    <h3 class="font-semibold text-gray-800 mb-3 border-b border-gray-100 pb-2">Export Dokumen (.doc)</h3>
+                    <div class="bg-gray-50 p-4 rounded-xl border border-gray-100 mb-3">
+                        <h4 class="font-medium text-gray-800 mb-3 flex items-center gap-2"><i data-lucide="calendar" class="w-4 h-4 text-[#007AFF]"></i> Rekap Rentang Waktu</h4>
+                        <div class="flex gap-2 items-center mb-3">
+                            <input type="date" id="export-start" class="flex-1 bg-white border border-gray-200 rounded-lg p-2 text-sm outline-none focus:border-[#007AFF]" />
+                            <span class="text-gray-400">-</span>
+                            <input type="date" id="export-end" class="flex-1 bg-white border border-gray-200 rounded-lg p-2 text-sm outline-none focus:border-[#007AFF]" />
+                        </div>
+                        <button onclick="exportByDate()" class="w-full py-2 bg-[#007AFF] text-white rounded-lg font-medium hover:bg-blue-600 transition-colors text-sm">Export Berdasarkan Tanggal</button>
                     </div>
-                    <button onclick="exportByDate()" class="w-full py-2 bg-[#007AFF] text-white rounded-lg font-medium hover:bg-blue-600 transition-colors">Export Berdasarkan Tanggal</button>
+                    
+                    <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                        <h4 class="font-medium text-gray-800 mb-3 flex items-center gap-2"><i data-lucide="check-square" class="w-4 h-4 text-[#007AFF]"></i> Pilih Laporan Spesifik</h4>
+                        <button onclick="enterSelectionMode()" class="w-full py-2 bg-white border border-[#007AFF] text-[#007AFF] rounded-lg font-medium hover:bg-blue-50 transition-colors text-sm">Pilih Laporan Manual</button>
+                    </div>
                 </div>
-                <div class="text-center text-sm text-gray-400 font-medium">ATAU</div>
-                <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                    <h3 class="font-medium text-gray-800 mb-3 flex items-center gap-2"><i data-lucide="check-square" class="w-5 h-5 text-[#007AFF]"></i> Pilih Laporan Spesifik</h3>
-                    <button onclick="enterSelectionMode()" class="w-full py-2 bg-white border border-[#007AFF] text-[#007AFF] rounded-lg font-medium hover:bg-blue-50 transition-colors">Pilih Laporan Manual</button>
+
+                <!-- JSON Sync Section -->
+                <div>
+                    <h3 class="font-semibold text-gray-800 mb-3 border-b border-gray-100 pb-2">Sinkronisasi Data (.json)</h3>
+                    <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                        <p class="text-xs text-gray-500 mb-4 leading-relaxed">Gunakan fitur ini untuk memindahkan, mencadangkan, atau memulihkan data catatan ke HP maupun PC lain.</p>
+                        <div class="flex gap-3">
+                            <button onclick="exportJSON()" class="flex-1 py-2 bg-white border border-[#007AFF] text-[#007AFF] rounded-lg font-medium hover:bg-blue-50 transition-colors text-sm flex justify-center items-center gap-1">
+                                <i data-lucide="upload" class="w-4 h-4"></i> Export JSON
+                            </button>
+                            <label class="flex-1 py-2 bg-[#007AFF] text-white rounded-lg font-medium hover:bg-blue-600 transition-colors text-sm cursor-pointer flex justify-center items-center gap-1">
+                                <i data-lucide="download" class="w-4 h-4"></i> Import JSON
+                                <input type="file" accept=".json" onchange="importJSON(event)" class="hidden" />
+                            </label>
+                        </div>
+                    </div>
                 </div>
+
             </div>
         </div>
     </div>
@@ -541,6 +571,74 @@
             generateWordDoc(filtered);
             cancelSelection();
             showToast("Laporan terpilih diekspor!");
+        }
+
+        // --- 9. EXPORT & IMPORT JSON (SINKRONISASI) ---
+        function exportJSON() {
+            if (reportsData.length === 0) return showToast("Tidak ada data untuk di-export.");
+            
+            const dataStr = JSON.stringify(reportsData, null, 2);
+            const blob = new Blob([dataStr], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = `Backup_Laporan_Harian_${new Date().getTime()}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            closeExportModal();
+            showToast("Data JSON berhasil diunduh!");
+        }
+
+        function importJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    if (!Array.isArray(importedData)) throw new Error("Format file JSON tidak valid.");
+                    
+                    let newCount = 0;
+                    let updateCount = 0;
+
+                    importedData.forEach(item => {
+                        if (item.id && item.reportedAt) {
+                            const existingIdx = reportsData.findIndex(r => r.id === item.id);
+                            if (existingIdx > -1) {
+                                // Timpa data jika id sama (menghindari duplikasi)
+                                reportsData[existingIdx] = { ...reportsData[existingIdx], ...item };
+                                updateCount++;
+                            } else {
+                                // Tambahkan sebagai data baru
+                                reportsData.push(item);
+                                newCount++;
+                            }
+                        }
+                    });
+
+                    // Jika ada data masuk, kita urutkan secara default (terbaru di atas) agar tidak berantakan
+                    if (newCount > 0) {
+                        reportsData.sort((a, b) => b.reportedAt - a.reportedAt);
+                    }
+
+                    StorageDB.save(reportsData);
+                    renderReports();
+                    closeExportModal();
+                    showToast(`Sinkronisasi selesai! ${newCount} baru, ${updateCount} diperbarui.`);
+                } catch (err) {
+                    console.error(err);
+                    alert("Gagal mengimpor data. Pastikan file JSON yang dipilih adalah backup valid dari aplikasi ini.");
+                }
+                
+                // Reset input agar pengguna dapat mengimpor file yang sama lagi jika perlu
+                event.target.value = '';
+            };
+            reader.readAsText(file);
         }
     </script>
 </body>
