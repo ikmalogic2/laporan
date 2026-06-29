@@ -69,14 +69,14 @@
     </header>
 
     <!-- Main Content -->
-    <main id="app-container" class="p-4 w-full md:max-w-3xl lg:max-w-5xl mx-auto space-y-4">
-        <div id="empty-state" class="hidden text-center p-12 text-gray-400 bg-white rounded-2xl shadow-sm border border-gray-100">
+    <main id="app-container" class="p-4 w-full md:max-w-5xl lg:max-w-7xl mx-auto flex flex-col gap-4">
+        <div id="empty-state" class="hidden text-center p-12 text-gray-400 bg-white rounded-2xl shadow-sm border border-gray-100 col-span-full w-full max-w-2xl mx-auto mt-10">
             <i data-lucide="image" class="w-12 h-12 mx-auto mb-4 opacity-50"></i>
             <p>Belum ada laporan.</p>
             <p class="text-sm mt-2">Ketuk tombol + untuk mulai mencatat.</p>
         </div>
-        <!-- Reports Container -->
-        <div id="reports-list" class="space-y-4"></div>
+        <!-- Reports Container (Menerapkan responsive Grid) -->
+        <div id="reports-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 items-start"></div>
     </main>
 
     <!-- Selection Bottom Bar -->
