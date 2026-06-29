@@ -70,9 +70,34 @@
 
     <!-- Main Content -->
     <main id="app-container" class="p-4 w-full md:max-w-5xl lg:max-w-7xl mx-auto flex flex-col gap-4">
-        <div id="empty-state" class="hidden text-center p-12 text-gray-400 bg-white rounded-2xl shadow-sm border border-gray-100 col-span-full w-full max-w-2xl mx-auto mt-10">
+        
+        <!-- Filter Container -->
+        <div class="flex justify-between items-center bg-white p-3 rounded-2xl shadow-sm border border-gray-100 w-full">
+            <div class="flex gap-3 w-full items-center">
+                <i data-lucide="calendar-search" class="w-5 h-5 text-[#007AFF] ml-2"></i>
+                <select id="filter-month" onchange="updateFilters()" class="flex-1 bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-sm outline-none focus:border-[#007AFF] text-gray-800 font-medium cursor-pointer">
+                    <option value="0">Januari</option>
+                    <option value="1">Februari</option>
+                    <option value="2">Maret</option>
+                    <option value="3">April</option>
+                    <option value="4">Mei</option>
+                    <option value="5">Juni</option>
+                    <option value="6">Juli</option>
+                    <option value="7">Agustus</option>
+                    <option value="8">September</option>
+                    <option value="9">Oktober</option>
+                    <option value="10">November</option>
+                    <option value="11">Desember</option>
+                </select>
+                <select id="filter-year" onchange="updateFilters()" class="w-1/3 sm:w-1/4 bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-sm outline-none focus:border-[#007AFF] text-gray-800 font-medium cursor-pointer">
+                    <!-- Dinamis -->
+                </select>
+            </div>
+        </div>
+
+        <div id="empty-state" class="hidden text-center p-12 text-gray-400 bg-white rounded-2xl shadow-sm border border-gray-100 col-span-full w-full max-w-2xl mx-auto mt-2">
             <i data-lucide="image" class="w-12 h-12 mx-auto mb-4 opacity-50"></i>
-            <p>Belum ada laporan.</p>
+            <p>Belum ada laporan di bulan ini.</p>
             <p class="text-sm mt-2">Ketuk tombol + untuk mulai mencatat.</p>
         </div>
         <!-- Reports Container (Menerapkan responsive Grid) -->
@@ -117,13 +142,19 @@
                     </div>
                 </div>
 
-                <textarea id="input-text" placeholder="Apa yang Anda kerjakan hari ini?" class="w-full h-32 resize-none outline-none text-lg text-gray-800 placeholder-gray-400 mb-4"></textarea>
+                <div class="mb-4">
+                    <label class="block text-xs text-gray-500 mb-1 font-medium">Judul Laporan *</label>
+                    <input type="text" id="input-title" placeholder="Contoh: Rapat Evaluasi Proyek" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm outline-none focus:border-[#007AFF] text-gray-800 font-medium" />
+                </div>
+
+                <label class="block text-xs text-gray-500 mb-1 font-medium">Catatan / Deskripsi</label>
+                <textarea id="input-text" placeholder="Detail kegiatan hari ini..." class="w-full h-32 bg-gray-50 border border-gray-200 rounded-xl p-3 resize-none outline-none text-sm text-gray-800 placeholder-gray-400 mb-4 focus:border-[#007AFF]"></textarea>
                 
-                <div id="image-preview-container" class="hidden relative inline-block mb-4">
-                    <img id="image-preview" src="" alt="Upload preview" class="max-h-64 rounded-xl border border-gray-200 object-cover" />
-                    <button onclick="removeImage()" class="absolute -top-3 -right-3 bg-red-500 text-white p-1.5 rounded-full shadow-md hover:bg-red-600">
-                        <i data-lucide="x" class="w-4 h-4"></i>
-                    </button>
+                <div id="image-preview-container" class="hidden mb-4">
+                    <label class="block text-xs text-gray-500 mb-2 font-medium">Lampiran Gambar</label>
+                    <div id="image-preview-list" class="flex gap-3 overflow-x-auto pb-2">
+                        <!-- Previews injected here -->
+                    </div>
                 </div>
             </div>
 
@@ -131,7 +162,7 @@
                 <label class="flex items-center justify-center gap-2 flex-1 bg-white border border-gray-200 py-3 rounded-xl cursor-pointer hover:bg-gray-50 active:bg-gray-100 transition-colors text-gray-700 font-medium">
                     <i data-lucide="image" class="w-5 h-5 text-[#007AFF]"></i>
                     <span>Galeri</span>
-                    <input type="file" accept="image/*" onchange="handleImageUpload(event)" class="hidden" />
+                    <input type="file" accept="image/*" multiple onchange="handleImageUpload(event)" class="hidden" />
                 </label>
                 <!-- Atribut capture="environment" di sini akan memaksa browser HP membuka kamera belakang -->
                 <label class="flex items-center justify-center gap-2 flex-1 bg-white border border-gray-200 py-3 rounded-xl cursor-pointer hover:bg-gray-50 active:bg-gray-100 transition-colors text-gray-700 font-medium">
@@ -221,7 +252,10 @@
         let selectedIds = [];
         let isSelectionMode = false;
         let editingId = null;
-        let currentImage = null;
+        let currentImages = [];
+        
+        let filterMonth = new Date().getMonth();
+        let filterYear = new Date().getFullYear();
 
         // --- 3. UTILS ---
         const generateId = () => 'id_' + Math.random().toString(36).substr(2, 9);
@@ -250,19 +284,64 @@
             setTimeout(() => toast.classList.add('hidden'), 3000);
         };
 
+        const compressImageAsync = (file) => {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let w = img.width, h = img.height, maxW = 800;
+                        if (w > maxW) { h *= maxW / w; w = maxW; }
+                        canvas.width = w; canvas.height = h;
+                        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                        resolve(canvas.toDataURL('image/jpeg', 0.7));
+                    };
+                    img.onerror = reject;
+                };
+                reader.onerror = reject;
+            });
+        };
+
+        function initFilters() {
+            const yearSelect = document.getElementById('filter-year');
+            const years = new Set([new Date().getFullYear(), filterYear]);
+            reportsData.forEach(r => years.add(new Date(r.reportedAt).getFullYear()));
+            
+            yearSelect.innerHTML = Array.from(years).sort((a,b) => b-a).map(y => 
+                `<option value="${y}" ${y === filterYear ? 'selected' : ''}>${y}</option>`
+            ).join('');
+            
+            document.getElementById('filter-month').value = filterMonth;
+        }
+
+        function updateFilters() {
+            filterMonth = parseInt(document.getElementById('filter-month').value);
+            filterYear = parseInt(document.getElementById('filter-year').value);
+            renderReports();
+        }
+
         // --- 4. RENDER UI ---
         function renderReports() {
             const list = document.getElementById('reports-list');
             const emptyState = document.getElementById('empty-state');
             
-            if (reportsData.length === 0) {
+            // Terapkan Filter Bulan dan Tahun
+            const filteredReports = reportsData.filter(report => {
+                const d = new Date(report.reportedAt);
+                return d.getMonth() === filterMonth && d.getFullYear() === filterYear;
+            });
+            
+            if (filteredReports.length === 0) {
                 list.innerHTML = '';
                 emptyState.classList.remove('hidden');
                 return;
             }
             emptyState.classList.add('hidden');
             
-            list.innerHTML = reportsData.map(report => {
+            list.innerHTML = filteredReports.map(report => {
                 const isSelected = selectedIds.includes(report.id);
                 const borderClass = isSelected ? 'border-[#007AFF] bg-blue-50/30' : 'border-gray-100 bg-white';
                 const timeStr = formatDate(report.reportedAt);
@@ -277,6 +356,27 @@
                     </div>
                 `;
 
+                // Migration & Support for Multiple Images
+                const reportImages = report.images || (report.image ? [report.image] : []);
+                
+                let attachmentNotice = '';
+                let imageHTML = '';
+                
+                if (reportImages.length > 0) {
+                    if (!isSelectionMode) {
+                        attachmentNotice = `<div class="attachment-notice mt-2 text-xs text-[#007AFF] flex items-center gap-1 font-medium"><i data-lucide="image" class="w-3.5 h-3.5"></i> ${reportImages.length} Lampiran gambar</div>`;
+                    }
+                    
+                    imageHTML = `<div class="grid grid-cols-2 gap-2 mb-4">`;
+                    reportImages.forEach(imgSrc => {
+                        imageHTML += `<img src="${imgSrc}" alt="Laporan" class="w-full rounded-xl object-cover h-32 sm:h-48 border border-gray-100 shadow-sm" />`;
+                    });
+                    imageHTML += `</div>`;
+                }
+
+                const reportTitle = escapeHTML(report.title || 'Tanpa Judul');
+                const reportText = escapeHTML(report.text || '');
+
                 return `
                 <div class="report-card rounded-2xl shadow-sm border ${borderClass} overflow-hidden transition-all duration-200" data-id="${report.id}">
                     <div class="p-4 flex gap-3 items-start cursor-pointer select-none" onclick="handleCardClick('${report.id}', this)">
@@ -286,15 +386,15 @@
                                 <span class="text-xs font-medium text-gray-500 flex items-center gap-1"><i data-lucide="calendar" class="w-3 h-3"></i> ${timeStr}</span>
                                 ${!isSelectionMode ? `<i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 chevron-icon"></i>` : ''}
                             </div>
-                            <p class="text-gray-800 font-medium text-base text-preview line-clamp-2">${escapeHTML(report.text) || "📷 Lampiran Foto"}</p>
-                            ${report.image && !isSelectionMode ? `<div class="attachment-notice mt-2 text-xs text-[#007AFF] flex items-center gap-1 font-medium"><i data-lucide="image" class="w-3.5 h-3.5"></i> Lampiran gambar</div>` : ''}
+                            <h3 class="font-bold text-gray-900 text-lg mb-0 line-clamp-1">${reportTitle}</h3>
                         </div>
                     </div>
                     
                     <div class="accordion-grid">
                         <div class="accordion-inner">
                             <div class="px-4 pb-4 pt-2 border-t border-gray-50">
-                                ${report.image ? `<img src="${report.image}" alt="Laporan" class="w-full rounded-xl object-cover mb-4 max-h-[400px] border border-gray-100 shadow-sm" />` : ''}
+                                <div class="text-gray-800 text-sm whitespace-pre-wrap mb-4">${reportText || "<span class='italic text-gray-400'>Tidak ada catatan</span>"}</div>
+                                ${imageHTML}
                                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mt-2">
                                     <div class="text-xs text-gray-400 space-y-1">
                                         <div class="flex items-center gap-1.5"><i data-lucide="clock" class="w-3 h-3"></i> Tgl: ${timeStr}</div>
@@ -325,6 +425,7 @@
         }
 
         // --- 5. INITIALIZE APP & SORTABLE ---
+        initFilters();
         if (window.lucide) {
             window.lucide.createIcons();
         }
@@ -337,14 +438,27 @@
             ghostClass: 'sortable-ghost',
             dragClass: 'sortable-drag',
             onEnd: function (evt) {
-                const itemElements = document.querySelectorAll('.report-card');
-                const newArray = [];
-                itemElements.forEach(el => {
-                    const id = el.getAttribute('data-id');
-                    const r = reportsData.find(i => i.id === id);
-                    if(r) newArray.push(r);
+                const newVisibleIds = Array.from(document.querySelectorAll('.report-card')).map(el => el.getAttribute('data-id'));
+                
+                // Ambil daftar yang tampil sebelum di-drag
+                const oldVisibleItems = reportsData.filter(r => {
+                    const d = new Date(r.reportedAt);
+                    return d.getMonth() === filterMonth && d.getFullYear() === filterYear;
                 });
-                reportsData = newArray;
+                
+                // Susun ulang hanya data yang tampil
+                const reorderedVisibleItems = newVisibleIds.map(id => oldVisibleItems.find(r => r.id === id));
+
+                // Masukkan kembali ke reportsData utama tanpa merusak data bulan/tahun lain
+                let visibleIdx = 0;
+                reportsData = reportsData.map(report => {
+                    const d = new Date(report.reportedAt);
+                    if (d.getMonth() === filterMonth && d.getFullYear() === filterYear) {
+                        return reorderedVisibleItems[visibleIdx++];
+                    }
+                    return report;
+                });
+                
                 StorageDB.save(reportsData);
             }
         });
@@ -358,29 +472,21 @@
             } else {
                 const card = el.closest('.report-card');
                 const grid = card.querySelector('.accordion-grid');
-                const textPreview = card.querySelector('.text-preview');
-                const attachmentNotice = card.querySelector('.attachment-notice');
                 const isExpanded = grid.classList.contains('expanded');
                 
                 document.querySelectorAll('.accordion-grid.expanded').forEach(e => {
                     if (e !== grid) {
                         e.classList.remove('expanded');
                         e.closest('.report-card').classList.remove('bg-gray-50');
-                        e.closest('.report-card').querySelector('.text-preview')?.classList.add('line-clamp-2');
-                        e.closest('.report-card').querySelector('.attachment-notice')?.classList.remove('hidden');
                     }
                 });
 
                 if (isExpanded) {
                     grid.classList.remove('expanded');
                     card.classList.remove('bg-gray-50');
-                    textPreview.classList.add('line-clamp-2');
-                    if(attachmentNotice) attachmentNotice.classList.remove('hidden');
                 } else {
                     grid.classList.add('expanded');
                     card.classList.add('bg-gray-50');
-                    textPreview.classList.remove('line-clamp-2');
-                    if(attachmentNotice) attachmentNotice.classList.add('hidden');
                 }
             }
         }
@@ -388,32 +494,51 @@
         // --- 7. FORM MODAL ---
         const checkSaveBtn = () => {
             const btn = document.getElementById('save-btn');
-            const hasContent = document.getElementById('input-text').value.trim() || currentImage;
+            const hasTitle = document.getElementById('input-title').value.trim();
             const hasTime = document.getElementById('input-date').value && document.getElementById('input-time').value;
-            if (hasContent && hasTime) btn.removeAttribute('disabled');
+            // Judul sekarang diwajibkan untuk diisi
+            if (hasTitle && hasTime) btn.removeAttribute('disabled');
             else btn.setAttribute('disabled', 'true');
         };
-        document.getElementById('input-text').addEventListener('input', checkSaveBtn);
+        document.getElementById('input-title').addEventListener('input', checkSaveBtn);
         document.getElementById('input-date').addEventListener('input', checkSaveBtn);
         document.getElementById('input-time').addEventListener('input', checkSaveBtn);
+
+        function renderImagePreviewList() {
+            const container = document.getElementById('image-preview-container');
+            const list = document.getElementById('image-preview-list');
+            
+            if (currentImages.length === 0) {
+                container.classList.add('hidden');
+                list.innerHTML = '';
+            } else {
+                container.classList.remove('hidden');
+                list.innerHTML = currentImages.map((src, idx) => `
+                    <div class="relative flex-shrink-0 w-24 h-24 sm:w-32 sm:h-32">
+                        <img src="${src}" class="w-full h-full object-cover rounded-xl border border-gray-200 shadow-sm" />
+                        <button onclick="removeImage(${idx})" class="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full shadow-md hover:bg-red-600 flex justify-center items-center">
+                            <i data-lucide="x" class="w-3 h-3"></i>
+                        </button>
+                    </div>
+                `).join('');
+                if (window.lucide) window.lucide.createIcons();
+            }
+        }
 
         function openFormModal(report = null) {
             editingId = report ? report.id : null;
             document.getElementById('form-title').innerText = report ? "Edit Laporan" : "Laporan Baru";
-            document.getElementById('input-text').value = report ? report.text : '';
+            
+            document.getElementById('input-title').value = report ? (report.title || '') : '';
+            document.getElementById('input-text').value = report ? (report.text || '') : '';
             
             const ts = report ? report.reportedAt : Date.now();
             const { date, time } = getLocalYMDHM(ts);
             document.getElementById('input-date').value = date;
             document.getElementById('input-time').value = time;
             
-            currentImage = report ? report.image : null;
-            if (currentImage) {
-                document.getElementById('image-preview').src = currentImage;
-                document.getElementById('image-preview-container').classList.remove('hidden');
-            } else {
-                document.getElementById('image-preview-container').classList.add('hidden');
-            }
+            currentImages = report ? (report.images || (report.image ? [report.image] : [])) : [];
+            renderImagePreviewList();
             
             checkSaveBtn();
             document.getElementById('form-modal').classList.remove('hidden');
@@ -423,39 +548,39 @@
             document.getElementById('form-modal').classList.add('hidden'); 
         }
 
-        function handleImageUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = (e) => {
-                const img = new Image();
-                img.src = e.target.result;
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    let w = img.width, h = img.height, maxW = 800;
-                    if (w > maxW) { h *= maxW / w; w = maxW; }
-                    canvas.width = w; canvas.height = h;
-                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-                    
-                    currentImage = canvas.toDataURL('image/jpeg', 0.7);
-                    document.getElementById('image-preview').src = currentImage;
-                    document.getElementById('image-preview-container').classList.remove('hidden');
-                    checkSaveBtn();
-                };
-            };
+        async function handleImageUpload(event) {
+            const files = event.target.files;
+            if (!files || files.length === 0) return;
+            
+            for (let i = 0; i < files.length; i++) {
+                try {
+                    const base64 = await compressImageAsync(files[i]);
+                    currentImages.push(base64);
+                } catch (e) {
+                    console.error("Gagal memproses gambar", e);
+                }
+            }
+            
+            renderImagePreviewList();
+            checkSaveBtn();
+            
+            // Reset input value so the same files can be selected again if needed
+            event.target.value = '';
         }
         
-        function removeImage() {
-            currentImage = null;
-            document.getElementById('image-preview-container').classList.add('hidden');
+        function removeImage(index) {
+            currentImages.splice(index, 1);
+            renderImagePreviewList();
             checkSaveBtn();
         }
 
         function saveReport() {
-            const text = document.getElementById('input-text').value;
+            const title = document.getElementById('input-title').value.trim();
+            const text = document.getElementById('input-text').value.trim();
             const dateStr = document.getElementById('input-date').value;
             const timeStr = document.getElementById('input-time').value;
+            
+            if (!title) return showToast("Judul wajib diisi.");
             if (!dateStr || !timeStr) return showToast("Tanggal dan waktu wajib diisi.");
             
             const reportedAt = new Date(`${dateStr}T${timeStr}`).getTime();
@@ -463,10 +588,10 @@
             if (editingId) {
                 const idx = reportsData.findIndex(r => r.id === editingId);
                 if (idx > -1) {
-                    reportsData[idx] = { ...reportsData[idx], text, image: currentImage, reportedAt, updatedAt: Date.now() };
+                    reportsData[idx] = { ...reportsData[idx], title, text, images: [...currentImages], reportedAt, updatedAt: Date.now() };
                 }
             } else {
-                const newReport = { id: generateId(), text, image: currentImage, reportedAt, updatedAt: null };
+                const newReport = { id: generateId(), title, text, images: [...currentImages], reportedAt, updatedAt: null };
                 
                 let inserted = false;
                 for (let i = 0; i < reportsData.length; i++) {
@@ -480,6 +605,13 @@
             }
             
             StorageDB.save(reportsData);
+            
+            // Pindahkan filter otomatis ke bulan/tahun catatan yang baru disave
+            const savedDate = new Date(reportedAt);
+            filterMonth = savedDate.getMonth();
+            filterYear = savedDate.getFullYear();
+            initFilters();
+            
             closeFormModal();
             renderReports();
             showToast("Laporan berhasil disimpan!");
@@ -514,12 +646,24 @@
             const sorted = [...reportsToExport].sort((a,b) => a.reportedAt - b.reportedAt);
 
             sorted.forEach((report) => {
+                const reportImages = report.images || (report.image ? [report.image] : []);
+                const reportTitle = escapeHTML(report.title || 'Tanpa Judul');
+
                 htmlContent += `
                 <div style="margin-bottom: 30px; padding-bottom: 15px; border-bottom: 1px solid #eaeaea;">
-                    <p style="color: #666; font-size: 14px; margin-bottom: 10px;"><strong>Waktu:</strong> ${formatDate(report.reportedAt)}</p>
-                    <p style="font-size: 14px; line-height: 1.6;">${escapeHTML(report.text).replace(/\n/g, '<br/>')}</p>
+                    <p style="color: #666; font-size: 14px; margin-bottom: 5px;"><strong>Waktu:</strong> ${formatDate(report.reportedAt)}</p>
+                    <h3 style="margin-top: 0; color: #333;">${reportTitle}</h3>
+                    <p style="font-size: 14px; line-height: 1.6; white-space: pre-wrap;">${escapeHTML(report.text)}</p>
                 `;
-                if (report.image) htmlContent += `<br/><img src="${report.image}" style="max-width: 100%; max-height: 500px;" />`;
+                
+                if (reportImages.length > 0) {
+                    htmlContent += `<div style="margin-top: 10px;">`;
+                    reportImages.forEach(imgSrc => {
+                        htmlContent += `<img src="${imgSrc}" style="max-width: 100%; max-height: 400px; margin-bottom: 10px; display: block;" />`;
+                    });
+                    htmlContent += `</div>`;
+                }
+                
                 htmlContent += `</div>`;
             });
             htmlContent += `</div>`;
@@ -627,6 +771,7 @@
                     }
 
                     StorageDB.save(reportsData);
+                    initFilters(); // Perbarui dropdown filter tahun 
                     renderReports();
                     closeExportModal();
                     showToast(`Sinkronisasi selesai! ${newCount} baru, ${updateCount} diperbarui.`);
