@@ -260,15 +260,17 @@
 
                 <!-- JSON Sync Section -->
                 <div>
-                    <h3 class="font-semibold text-gray-800 mb-3 border-b border-gray-100 pb-2">Sinkronisasi Data (.json)</h3>
+                    <h3 class="font-semibold text-gray-800 mb-3 border-b border-gray-100 pb-2">Sinkronisasi Backup (.json)</h3>
                     <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                        <p class="text-xs text-gray-500 mb-4 leading-relaxed">Gunakan fitur ini untuk memindahkan, mencadangkan, atau memulihkan data ke HP maupun PC lain.</p>
+                        <p class="text-xs text-gray-500 mb-4 leading-relaxed">
+                            Backup ini mencakup semua tab secara menyeluruh. Saat di-import, data lama tidak akan hilang, melainkan digabung (Merge) dengan data terbaru.
+                        </p>
                         <div class="flex gap-3">
                             <button onclick="exportJSON()" class="flex-1 py-2 bg-white border border-[#007AFF] text-[#007AFF] rounded-lg font-medium hover:bg-blue-50 transition-colors text-sm flex justify-center items-center gap-1">
                                 <i data-lucide="upload" class="w-4 h-4"></i> Backup Data
                             </button>
                             <label class="flex-1 py-2 bg-[#007AFF] text-white rounded-lg font-medium hover:bg-blue-600 transition-colors text-sm cursor-pointer flex justify-center items-center gap-1">
-                                <i data-lucide="download" class="w-4 h-4"></i> Restore Data
+                                <i data-lucide="download" class="w-4 h-4"></i> Restore / Gabung
                                 <input type="file" accept=".json" onchange="importJSON(event)" class="hidden" />
                             </label>
                         </div>
@@ -391,7 +393,10 @@
         function initFilters() {
             const yearSelect = document.getElementById('filter-year');
             const years = new Set([new Date().getFullYear(), filterYear]);
-            reportsData.forEach(r => years.add(new Date(r.reportedAt).getFullYear()));
+            
+            reportsData.forEach(r => {
+                if(!r.deleted) years.add(new Date(r.reportedAt).getFullYear());
+            });
             
             yearSelect.innerHTML = Array.from(years).sort((a,b) => b-a).map(y => 
                 `<option value="${y}" ${y === filterYear ? 'selected' : ''}>${y}</option>`
@@ -411,8 +416,9 @@
             const list = document.getElementById('reports-list');
             const emptyState = document.getElementById('empty-state');
             
-            // Apply Filters
+            // Apply Filters & Ignore Deleted Items
             const filteredReports = reportsData.filter(report => {
+                if(report.deleted) return false;
                 const d = new Date(report.reportedAt);
                 return d.getMonth() === filterMonth && d.getFullYear() === filterYear;
             });
@@ -528,7 +534,10 @@
             dragClass: 'sortable-drag',
             onEnd: function (evt) {
                 const newVisibleIds = Array.from(document.querySelectorAll('.report-card')).map(el => el.getAttribute('data-id'));
+                
+                // Ambil item yang sedang ditampilkan saja (tanpa filter/deleted)
                 const oldVisibleItems = reportsData.filter(r => {
+                    if (r.deleted) return false;
                     const d = new Date(r.reportedAt);
                     return d.getMonth() === filterMonth && d.getFullYear() === filterYear;
                 });
@@ -537,9 +546,12 @@
 
                 let visibleIdx = 0;
                 reportsData = reportsData.map(report => {
+                    if (report.deleted) return report;
                     const d = new Date(report.reportedAt);
                     if (d.getMonth() === filterMonth && d.getFullYear() === filterYear) {
-                        return reorderedVisibleItems[visibleIdx++];
+                        const reorderedItem = reorderedVisibleItems[visibleIdx++];
+                        reorderedItem.updatedAt = Date.now(); // Perbarui tanggal agar susunan tersinkronisasi
+                        return reorderedItem;
                     }
                     return report;
                 });
@@ -695,7 +707,13 @@
             if (!dateStr || !timeStr) return showToast("Tanggal dan waktu wajib diisi.");
             
             const reportedAt = new Date(`${dateStr}T${timeStr}`).getTime();
-            let newData = { reportedAt, images: [...currentImages], updatedAt: editingId ? Date.now() : null };
+            
+            let newData = { 
+                reportedAt, 
+                images: [...currentImages], 
+                updatedAt: Date.now(), // Selalu set updatedAt ke sekarang saat disimpan
+                deleted: false // Pastikan state dihapus adalah false
+            };
             
             if (activeTab === 'laporan_harian') {
                 const title = document.getElementById('input-title').value.trim();
@@ -746,11 +764,18 @@
         }
 
         function deleteReport(id) {
-            if (confirm("Hapus data ini secara permanen?")) {
-                reportsData = reportsData.filter(r => r.id !== id);
-                StorageDB.save(activeTab, reportsData);
-                renderReports();
-                showToast("Data dihapus.");
+            if (confirm("Hapus data ini? Catatan akan dihapus, namun sinkronisasi akan merekam penghapusan ini agar tidak muncul lagi.")) {
+                const idx = reportsData.findIndex(r => r.id === id);
+                if (idx > -1) {
+                    // Soft Delete Strategy: Jangan diremove dari array
+                    // Ubah status deleted menjadi true dan ubah updatedAt
+                    reportsData[idx].deleted = true;
+                    reportsData[idx].updatedAt = Date.now(); 
+                    
+                    StorageDB.save(activeTab, reportsData);
+                    renderReports(); // renderReports secara otomatis menyembunyikan item yang .deleted = true
+                    showToast("Data dihapus.");
+                }
             }
         }
 
@@ -768,7 +793,8 @@
                 <hr style="border: 1px solid #ccc; margin-bottom: 20px;" />
             `;
             
-            const sorted = [...reportsToExport].sort((a,b) => a.reportedAt - b.reportedAt);
+            // Urutkan dan pastikan memfilter yang deleted
+            const sorted = [...reportsToExport].filter(r => !r.deleted).sort((a,b) => a.reportedAt - b.reportedAt);
 
             sorted.forEach((report) => {
                 const reportImages = report.images || (report.image ? [report.image] : []);
@@ -815,7 +841,7 @@
             const tsStart = new Date(start).setHours(0, 0, 0, 0);
             const tsEnd = new Date(end).setHours(23, 59, 59, 999);
             
-            const filtered = reportsData.filter(r => r.reportedAt >= tsStart && r.reportedAt <= tsEnd);
+            const filtered = reportsData.filter(r => !r.deleted && r.reportedAt >= tsStart && r.reportedAt <= tsEnd);
             if (filtered.length === 0) return showToast("Tidak ada data di tanggal tersebut.");
             
             generateWordDoc(filtered);
@@ -845,23 +871,60 @@
             showToast("Data terpilih diekspor!");
         }
 
-        // --- EXPORT & IMPORT JSON (SINKRONISASI) ---
+        // --- EXPORT & IMPORT JSON (ADVANCED SYNC) ---
+        
+        // Fungsi pembantu untuk menggabung data (Merge)
+        function mergeData(localArray, importedArray) {
+            let newCount = 0, updateCount = 0;
+            
+            // Map index berdasarkan ID supaya akses cepat
+            const localMap = {};
+            localArray.forEach((item, idx) => { localMap[item.id] = idx; });
+
+            importedArray.forEach(item => {
+                if (item.id && item.reportedAt) {
+                    if (localMap[item.id] !== undefined) {
+                        const existingItem = localArray[localMap[item.id]];
+                        const localTime = existingItem.updatedAt || existingItem.reportedAt;
+                        const importTime = item.updatedAt || item.reportedAt;
+                        
+                        // Menimpa HANYA JIKA file JSON memiliki perubahan yang "lebih baru"
+                        if (importTime > localTime) {
+                            localArray[localMap[item.id]] = { ...existingItem, ...item };
+                            updateCount++;
+                        }
+                    } else {
+                        // Jika item tidak ada di lokal (misal D, E, F dari PC), maka push
+                        localArray.push(item);
+                        newCount++;
+                    }
+                }
+            });
+            
+            return { mergedArray: localArray, newCount, updateCount };
+        }
+
         function exportJSON() {
-            if (reportsData.length === 0) return showToast("Tidak ada data untuk di-export.");
-            const dataStr = JSON.stringify(reportsData, null, 2);
+            // Kita gabungkan semua memori (semua tab) untuk full backup
+            const allData = {
+                laporan_harian: StorageDB.load('laporan_harian'),
+                akad_nikah: StorageDB.load('akad_nikah')
+            };
+            
+            const dataStr = JSON.stringify(allData, null, 2);
             const blob = new Blob([dataStr], { type: "application/json" });
             const url = URL.createObjectURL(blob);
             
             const link = document.createElement("a");
             link.href = url;
-            link.download = `Backup_${activeTab}_${new Date().getTime()}.json`;
+            link.download = `Backup_Semua_Catatan_${new Date().getTime()}.json`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
             URL.revokeObjectURL(url);
             
             closeExportModal();
-            showToast("Data JSON berhasil diunduh!");
+            showToast("Backup Full JSON berhasil diunduh!");
         }
 
         function importJSON(event) {
@@ -872,33 +935,45 @@
             reader.onload = function(e) {
                 try {
                     const importedData = JSON.parse(e.target.result);
-                    if (!Array.isArray(importedData)) throw new Error("Format file JSON tidak valid.");
-                    
-                    let newCount = 0, updateCount = 0;
+                    let totalNew = 0, totalUpdate = 0;
 
-                    importedData.forEach(item => {
-                        if (item.id && item.reportedAt) {
-                            const existingIdx = reportsData.findIndex(r => r.id === item.id);
-                            if (existingIdx > -1) {
-                                reportsData[existingIdx] = { ...reportsData[existingIdx], ...item };
-                                updateCount++;
-                            } else {
-                                reportsData.push(item);
-                                newCount++;
+                    // Support format legacy (Array tunggal lama) atau format baru (Object { tab: [] })
+                    if (Array.isArray(importedData)) {
+                        const { mergedArray, newCount, updateCount } = mergeData(reportsData, importedData);
+                        reportsData = mergedArray;
+                        StorageDB.save(activeTab, reportsData);
+                        totalNew = newCount;
+                        totalUpdate = updateCount;
+                    } else {
+                        // Iterasi per tab (Sinkronisasi Semua Tab)
+                        for (const tabName in importedData) {
+                            if (Array.isArray(importedData[tabName])) {
+                                const localData = StorageDB.load(tabName);
+                                const { mergedArray, newCount, updateCount } = mergeData(localData, importedData[tabName]);
+                                StorageDB.save(tabName, mergedArray);
+                                
+                                totalNew += newCount;
+                                totalUpdate += updateCount;
+                                
+                                // Jika tab yang disinkron adalah tab yang sedang aktif di UI, update di memory
+                                if (tabName === activeTab) {
+                                    reportsData = mergedArray;
+                                }
                             }
                         }
-                    });
+                    }
 
-                    if (newCount > 0) reportsData.sort((a, b) => b.reportedAt - a.reportedAt);
-                    
+                    // Urutkan memori yang aktif lalu save lagi
+                    reportsData.sort((a, b) => b.reportedAt - a.reportedAt);
                     StorageDB.save(activeTab, reportsData);
+
                     initFilters(); 
                     renderReports();
                     closeExportModal();
-                    showToast(`Sinkronisasi selesai! ${newCount} baru, ${updateCount} diperbarui.`);
+                    showToast(`Sinkronisasi selesai! ${totalNew} item baru, ${totalUpdate} diperbarui.`);
                 } catch (err) {
                     console.error(err);
-                    alert("Gagal mengimpor data. Pastikan file JSON yang dipilih adalah backup valid.");
+                    alert("Gagal mengimpor data. Pastikan file JSON yang dipilih adalah backup yang valid.");
                 }
                 event.target.value = '';
             };
