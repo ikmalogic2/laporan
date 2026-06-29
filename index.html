@@ -69,7 +69,7 @@
             </button>
         </div>
         
-        <div class="px-6 py-4">
+        <div class="px-6 py-4 overflow-y-auto">
             <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Menu Utama</p>
             <nav class="space-y-2">
                 <button onclick="switchTab('laporan_harian')" id="tab-laporan_harian" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left font-semibold transition-all bg-[#007AFF]/10 text-[#007AFF]">
@@ -77,6 +77,18 @@
                 </button>
                 <button onclick="switchTab('akad_nikah')" id="tab-akad_nikah" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left font-medium text-gray-600 hover:bg-gray-50 transition-all">
                     <i data-lucide="heart-handshake" class="w-5 h-5"></i> Akad Nikah
+                </button>
+                <button onclick="switchTab('inventaris_kua')" id="tab-inventaris_kua" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left font-medium text-gray-600 hover:bg-gray-50 transition-all">
+                    <i data-lucide="archive" class="w-5 h-5"></i> Inventaris KUA
+                </button>
+                <button onclick="switchTab('surat_keluar')" id="tab-surat_keluar" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left font-medium text-gray-600 hover:bg-gray-50 transition-all">
+                    <i data-lucide="send" class="w-5 h-5"></i> Surat Keluar
+                </button>
+                <button onclick="switchTab('surat_masuk')" id="tab-surat_masuk" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left font-medium text-gray-600 hover:bg-gray-50 transition-all">
+                    <i data-lucide="mail" class="w-5 h-5"></i> Surat Masuk
+                </button>
+                <button onclick="switchTab('catatan')" id="tab-catatan" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left font-medium text-gray-600 hover:bg-gray-50 transition-all">
+                    <i data-lucide="sticky-note" class="w-5 h-5"></i> Catatan
                 </button>
             </nav>
         </div>
@@ -111,6 +123,11 @@
                 <div class="flex gap-3 w-full items-center">
                     <i data-lucide="calendar-search" class="w-5 h-5 text-[#007AFF] ml-2"></i>
                     <select id="filter-month" onchange="updateFilters()" class="flex-1 bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-sm outline-none focus:border-[#007AFF] text-gray-800 font-medium cursor-pointer">
+                        <option value="all">Setahun (Semua Bulan)</option>
+                        <option value="q1">Triwulan 1 (Jan-Mar)</option>
+                        <option value="q2">Triwulan 2 (Apr-Jun)</option>
+                        <option value="q3">Triwulan 3 (Jul-Sep)</option>
+                        <option value="q4">Triwulan 4 (Okt-Des)</option>
                         <option value="0">Januari</option>
                         <option value="1">Februari</option>
                         <option value="2">Maret</option>
@@ -143,11 +160,15 @@
 
     <!-- Selection Bottom Bar -->
     <div id="selection-bar" class="hidden fixed bottom-0 left-0 md:left-64 right-0 bg-white border-t border-gray-200 p-4 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-40 animate-slide-up">
-        <div class="w-full md:max-w-3xl lg:max-w-5xl mx-auto flex justify-between items-center">
+        <div class="w-full md:max-w-3xl lg:max-w-5xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-3">
             <span id="selection-count" class="font-medium text-gray-700">0 data dipilih</span>
-            <div class="flex gap-3">
-                <button onclick="cancelSelection()" class="px-4 py-2 text-gray-500 font-medium hover:bg-gray-100 rounded-lg transition-colors">Batal</button>
-                <button onclick="exportSelected()" class="px-4 py-2 bg-[#007AFF] text-white font-medium rounded-lg hover:bg-blue-600 transition-colors shadow-sm">Export Doc</button>
+            <div class="flex gap-2 items-center w-full sm:w-auto">
+                <select id="export-format-bar" class="flex-1 sm:flex-none bg-gray-50 border border-gray-200 rounded-lg p-2 text-sm outline-none focus:border-[#007AFF] text-gray-800 font-medium">
+                    <option value="table">Tabel</option>
+                    <option value="text">Tanpa Tabel</option>
+                </select>
+                <button onclick="cancelSelection()" class="px-3 py-2 text-gray-500 font-medium hover:bg-gray-100 rounded-lg transition-colors text-sm">Batal</button>
+                <button onclick="exportSelected()" class="px-3 py-2 bg-[#007AFF] text-white font-medium rounded-lg hover:bg-blue-600 transition-colors shadow-sm text-sm">Export</button>
             </div>
         </div>
     </div>
@@ -171,11 +192,11 @@
                 <!-- Global Fields: Date & Time -->
                 <div class="flex gap-3 mb-4">
                     <div class="flex-1">
-                        <label class="block text-xs text-gray-500 mb-1 font-medium">Tanggal *</label>
+                        <label class="block text-xs text-gray-500 mb-1 font-medium">Tgl Pencatatan Sistem *</label>
                         <input type="date" id="input-date" required class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm outline-none focus:border-[#007AFF] text-gray-800" />
                     </div>
                     <div class="flex-1">
-                        <label class="block text-xs text-gray-500 mb-1 font-medium">Waktu / Jam *</label>
+                        <label class="block text-xs text-gray-500 mb-1 font-medium">Jam *</label>
                         <input type="time" id="input-time" required class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm outline-none focus:border-[#007AFF] text-gray-800" />
                     </div>
                 </div>
@@ -187,8 +208,18 @@
                         <input type="text" id="input-title" placeholder="Contoh: Rapat Evaluasi Proyek" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm outline-none focus:border-[#007AFF] text-gray-800 font-medium" />
                     </div>
                     <div>
-                        <label class="block text-xs text-gray-500 mb-1 font-medium">Catatan / Deskripsi</label>
-                        <textarea id="input-text" placeholder="Detail kegiatan hari ini..." class="w-full h-32 bg-gray-50 border border-gray-200 rounded-xl p-3 resize-none outline-none text-sm text-gray-800 placeholder-gray-400 focus:border-[#007AFF]"></textarea>
+                        <label class="block text-xs text-gray-500 mb-1 font-medium">Uraian Tugas / Kegiatan *</label>
+                        <textarea id="input-uraian" placeholder="Detail kegiatan hari ini..." class="w-full h-24 bg-gray-50 border border-gray-200 rounded-xl p-3 resize-none outline-none text-sm text-gray-800 placeholder-gray-400 focus:border-[#007AFF]"></textarea>
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <div class="flex-1">
+                            <label class="block text-xs text-gray-500 mb-1 font-medium">Volume</label>
+                            <input type="text" id="input-volume" placeholder="Contoh: 1 Dokumen" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm outline-none focus:border-[#007AFF] text-gray-800" />
+                        </div>
+                        <div class="flex-1">
+                            <label class="block text-xs text-gray-500 mb-1 font-medium">Bukti Dukung</label>
+                            <input type="text" id="input-bukti" placeholder="Contoh: Laporan PDF, Link Drive" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm outline-none focus:border-[#007AFF] text-gray-800" />
+                        </div>
                     </div>
                 </div>
 
@@ -203,7 +234,165 @@
                         <input type="text" id="input-catin-perempuan" placeholder="Contoh: Siti Nurhaliza" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm outline-none focus:border-[#007AFF] text-gray-800 font-medium" />
                     </div>
                 </div>
+
+                <!-- Fields for Inventaris KUA -->
+                <div id="form-inventaris-fields" class="space-y-4 hidden">
+                    <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-4">
+                        <h3 class="font-semibold text-gray-700 text-sm">Spesifikasi Barang</h3>
+                        
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1 font-medium">Jenis BMN *</label>
+                            <select id="input-inv-jenis" onchange="toggleInvNamaField(); checkSaveBtn()" class="w-full bg-white border border-gray-200 rounded-lg p-3 text-sm outline-none focus:border-[#007AFF] text-gray-800 font-medium cursor-pointer">
+                                <option value="">-- Pilih Jenis BMN --</option>
+                                <option value="Tanah/ Bangunan KUA">Tanah/ Bangunan KUA</option>
+                                <option value="Kendaraan dan Mesin">Kendaraan dan Mesin</option>
+                                <option value="Barang Elektronik">Barang Elektronik</option>
+                                <option value="Furniture">Furniture</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Tersembunyi sebelum jenis dipilih -->
+                        <div id="wrapper-inv-nama" class="hidden">
+                            <label class="block text-xs text-gray-500 mb-1 font-medium">Nama / Detail Barang *</label>
+                            <input type="text" id="input-inv-nama" placeholder="Contoh: Kursi, Meja, Lemari..." class="w-full bg-white border border-gray-200 rounded-lg p-3 text-sm outline-none focus:border-[#007AFF] text-gray-800 font-medium" />
+                        </div>
+                        
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <div class="flex-1">
+                                <label class="block text-xs text-gray-500 mb-1 font-medium">Merk / Tipe</label>
+                                <input type="text" id="input-inv-merk" placeholder="Contoh: Honda / Canon" class="w-full bg-white border border-gray-200 rounded-lg p-3 text-sm outline-none focus:border-[#007AFF] text-gray-800" />
+                            </div>
+                            <div class="flex-1">
+                                <label class="block text-xs text-gray-500 mb-1 font-medium">No. Sertifikat / No. Mesin</label>
+                                <input type="text" id="input-inv-nomor" placeholder="Kosongkan jika tidak ada" class="w-full bg-white border border-gray-200 rounded-lg p-3 text-sm outline-none focus:border-[#007AFF] text-gray-800" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <div class="flex-1">
+                            <label class="block text-xs text-gray-500 mb-1 font-medium">Thn Perolehan / Sumber Dana</label>
+                            <input type="text" id="input-inv-perolehan" placeholder="Contoh: 2023 / DIPA" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm outline-none focus:border-[#007AFF] text-gray-800" />
+                        </div>
+                        <div class="flex-1">
+                            <label class="block text-xs text-gray-500 mb-1 font-medium">Satuan (Volume / Luas)</label>
+                            <input type="text" id="input-inv-satuan" placeholder="Contoh: 2 Unit / 150 m2" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm outline-none focus:border-[#007AFF] text-gray-800" />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1 font-medium">Keterangan Kondisi Barang *</label>
+                        <select id="input-inv-kondisi" onchange="checkSaveBtn()" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm outline-none focus:border-[#007AFF] text-gray-800 font-medium cursor-pointer">
+                            <option value="">-- Pilih Kondisi --</option>
+                            <option value="Baik">Baik</option>
+                            <option value="Kurang Baik">Kurang Baik</option>
+                            <option value="Rusak Berat">Rusak Berat</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Fields for Surat Keluar -->
+                <div id="form-surat-keluar-fields" class="space-y-4 hidden">
+                    <div class="flex gap-3">
+                        <div class="w-1/3">
+                            <label class="block text-xs text-gray-500 mb-1 font-medium">No. Urut *</label>
+                            <input type="text" id="input-sk-no" placeholder="Contoh: 01" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm outline-none focus:border-[#007AFF] text-gray-800 font-medium" />
+                        </div>
+                        <div class="flex-1">
+                            <label class="block text-xs text-gray-500 mb-1 font-medium">Nomor Surat *</label>
+                            <input type="text" id="input-sk-nomor" placeholder="Contoh: B-123/KUA..." class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm outline-none focus:border-[#007AFF] text-gray-800 font-medium" />
+                        </div>
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <div class="flex-1">
+                            <label class="block text-xs text-gray-500 mb-1 font-medium">Tanggal Surat *</label>
+                            <input type="date" id="input-sk-tanggal" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm outline-none focus:border-[#007AFF] text-gray-800" />
+                        </div>
+                        <div class="flex-1">
+                            <label class="block text-xs text-gray-500 mb-1 font-medium">Tujuan Surat *</label>
+                            <input type="text" id="input-sk-tujuan" placeholder="Contoh: Kemenag Kota" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm outline-none focus:border-[#007AFF] text-gray-800 font-medium" />
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1 font-medium">Deskripsi Surat *</label>
+                        <textarea id="input-sk-deskripsi" placeholder="Perihal atau ringkasan isi surat..." class="w-full h-24 bg-gray-50 border border-gray-200 rounded-xl p-3 resize-none outline-none text-sm text-gray-800 placeholder-gray-400 focus:border-[#007AFF]"></textarea>
+                    </div>
+                </div>
+
+                <!-- Fields for Surat Masuk -->
+                <div id="form-surat-masuk-fields" class="space-y-4 hidden">
+                    <div class="flex gap-3">
+                        <div class="w-1/3">
+                            <label class="block text-xs text-gray-500 mb-1 font-medium">No. Urut *</label>
+                            <input type="text" id="input-sm-no" placeholder="Contoh: 01" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm outline-none focus:border-[#007AFF] text-gray-800 font-medium" />
+                        </div>
+                        <div class="flex-1">
+                            <label class="block text-xs text-gray-500 mb-1 font-medium">Nomor Surat *</label>
+                            <input type="text" id="input-sm-nomor" placeholder="Contoh: B-123/KUA..." class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm outline-none focus:border-[#007AFF] text-gray-800 font-medium" />
+                        </div>
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <div class="flex-1">
+                            <label class="block text-xs text-gray-500 mb-1 font-medium">Tanggal Surat *</label>
+                            <input type="date" id="input-sm-tanggal" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm outline-none focus:border-[#007AFF] text-gray-800" />
+                        </div>
+                        <div class="flex-1">
+                            <label class="block text-xs text-gray-500 mb-1 font-medium">Pembuat / TTD Surat *</label>
+                            <input type="text" id="input-sm-pembuat" placeholder="Contoh: Kepala Desa" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm outline-none focus:border-[#007AFF] text-gray-800 font-medium" />
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1 font-medium">Deskripsi Surat *</label>
+                        <textarea id="input-sm-deskripsi" placeholder="Perihal atau ringkasan isi surat..." class="w-full h-24 bg-gray-50 border border-gray-200 rounded-xl p-3 resize-none outline-none text-sm text-gray-800 placeholder-gray-400 focus:border-[#007AFF]"></textarea>
+                    </div>
+                </div>
                 
+                <!-- Fields for Catatan -->
+                <div id="form-catatan-fields" class="space-y-4 hidden">
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1 font-medium">Jenis Catatan *</label>
+                        <select id="input-cat-jenis" onchange="toggleCatatanRapat(); checkSaveBtn()" class="w-full bg-white border border-gray-200 rounded-lg p-3 text-sm outline-none focus:border-[#007AFF] text-gray-800 font-medium cursor-pointer">
+                            <option value="">-- Pilih Jenis Catatan --</option>
+                            <option value="Memo">Memo</option>
+                            <option value="Catatan Biasa">Catatan Biasa</option>
+                            <option value="Catatan Rapat">Catatan Rapat</option>
+                            <option value="Lainnya">Lainnya</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1 font-medium">Judul Catatan *</label>
+                        <input type="text" id="input-cat-judul" placeholder="Contoh: Rapat Mingguan / Memo Internal" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm outline-none focus:border-[#007AFF] text-gray-800 font-medium" />
+                    </div>
+                    
+                    <div id="wrapper-catatan-rapat" class="hidden bg-blue-50/50 p-4 rounded-xl border border-blue-100 space-y-4">
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <div class="flex-1">
+                                <label class="block text-xs text-gray-500 mb-1 font-medium">Tanggal Pelaksanaan</label>
+                                <input type="date" id="input-cat-tanggal" class="w-full bg-white border border-gray-200 rounded-lg p-3 text-sm outline-none focus:border-[#007AFF] text-gray-800" />
+                            </div>
+                            <div class="flex-1">
+                                <label class="block text-xs text-gray-500 mb-1 font-medium">Tempat</label>
+                                <input type="text" id="input-cat-tempat" placeholder="Contoh: Ruang Rapat Lt. 2" class="w-full bg-white border border-gray-200 rounded-lg p-3 text-sm outline-none focus:border-[#007AFF] text-gray-800" />
+                            </div>
+                        </div>
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <div class="flex-1">
+                                <label class="block text-xs text-gray-500 mb-1 font-medium">Acara</label>
+                                <input type="text" id="input-cat-acara" placeholder="Contoh: Koordinasi Bulanan" class="w-full bg-white border border-gray-200 rounded-lg p-3 text-sm outline-none focus:border-[#007AFF] text-gray-800" />
+                            </div>
+                            <div class="flex-1">
+                                <label class="block text-xs text-gray-500 mb-1 font-medium">Pembicara</label>
+                                <input type="text" id="input-cat-pembicara" placeholder="Contoh: Kepala KUA" class="w-full bg-white border border-gray-200 rounded-lg p-3 text-sm outline-none focus:border-[#007AFF] text-gray-800" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1 font-medium">Isi Catatan *</label>
+                        <textarea id="input-cat-isi" placeholder="Tulis catatan di sini..." class="w-full h-24 bg-gray-50 border border-gray-200 rounded-xl p-3 resize-none outline-none text-sm text-gray-800 placeholder-gray-400 focus:border-[#007AFF]"></textarea>
+                    </div>
+                </div>
+
                 <!-- Global Fields: Multiple Images -->
                 <div id="image-preview-container" class="hidden mt-4">
                     <label class="block text-xs text-gray-500 mb-2 font-medium">Lampiran Gambar / Foto</label>
@@ -242,6 +431,15 @@
                 <!-- Word Export Section -->
                 <div>
                     <h3 class="font-semibold text-gray-800 mb-3 border-b border-gray-100 pb-2">Export Dokumen (.doc)</h3>
+                    
+                    <div class="mb-3">
+                        <label class="block text-xs text-gray-500 mb-1 font-medium">Format Tampilan Output</label>
+                        <select id="export-format" class="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-sm outline-none focus:border-[#007AFF] text-gray-800 font-medium">
+                            <option value="table">Dengan Tabel (Landscape)</option>
+                            <option value="text">Tanpa Tabel (Portrait)</option>
+                        </select>
+                    </div>
+
                     <div class="bg-gray-50 p-4 rounded-xl border border-gray-100 mb-3">
                         <h4 class="font-medium text-gray-800 mb-3 flex items-center gap-2"><i data-lucide="calendar" class="w-4 h-4 text-[#007AFF]"></i> Rekap Rentang Waktu</h4>
                         <div class="flex gap-2 items-center mb-3">
@@ -254,7 +452,7 @@
                     
                     <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
                         <h4 class="font-medium text-gray-800 mb-3 flex items-center gap-2"><i data-lucide="check-square" class="w-4 h-4 text-[#007AFF]"></i> Pilih Laporan Spesifik</h4>
-                        <button onclick="enterSelectionMode()" class="w-full py-2 bg-white border border-[#007AFF] text-[#007AFF] rounded-lg font-medium hover:bg-blue-50 transition-colors text-sm">Pilih Laporan Manual</button>
+                        <button onclick="enterSelectionMode()" class="w-full py-2 bg-white border border-[#007AFF] text-[#007AFF] rounded-lg font-medium hover:bg-blue-50 transition-colors text-sm">Pilih Data Manual</button>
                     </div>
                 </div>
 
@@ -263,7 +461,7 @@
                     <h3 class="font-semibold text-gray-800 mb-3 border-b border-gray-100 pb-2">Sinkronisasi Backup (.json)</h3>
                     <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
                         <p class="text-xs text-gray-500 mb-4 leading-relaxed">
-                            Backup ini mencakup semua tab secara menyeluruh. Saat di-import, data lama tidak akan hilang, melainkan digabung (Merge) dengan data terbaru.
+                            Backup mencakup <strong>semua tab</strong> secara menyeluruh. Saat di-import, data akan digabung (Merge) dengan data terbaru.
                         </p>
                         <div class="flex gap-3">
                             <button onclick="exportJSON()" class="flex-1 py-2 bg-white border border-[#007AFF] text-[#007AFF] rounded-lg font-medium hover:bg-blue-50 transition-colors text-sm flex justify-center items-center gap-1">
@@ -276,7 +474,6 @@
                         </div>
                     </div>
                 </div>
-
             </div>
         </div>
     </div>
@@ -351,6 +548,7 @@
             });
         };
 
+        // --- STREAMING_CHUNK:Implementing UI Navigation (Sidebar and Tabs)... ---
         // --- SIDEBAR & NAVIGATION ---
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
@@ -370,7 +568,13 @@
             activeBtn.className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left font-semibold transition-all bg-[#007AFF]/10 text-[#007AFF]";
             
             // Update Header Title
-            document.getElementById('header-title').innerText = tabId === 'laporan_harian' ? 'Laporan Harian' : 'Akad Nikah';
+            let headerText = 'Laporan Harian';
+            if (tabId === 'akad_nikah') headerText = 'Akad Nikah';
+            if (tabId === 'inventaris_kua') headerText = 'Inventaris KUA';
+            if (tabId === 'surat_keluar') headerText = 'Surat Keluar';
+            if (tabId === 'surat_masuk') headerText = 'Surat Masuk';
+            if (tabId === 'catatan') headerText = 'Catatan';
+            document.getElementById('header-title').innerText = headerText;
             
             // Load fresh data for this tab
             reportsData = StorageDB.load(activeTab);
@@ -406,9 +610,24 @@
         }
 
         function updateFilters() {
-            filterMonth = parseInt(document.getElementById('filter-month').value);
+            const monthVal = document.getElementById('filter-month').value;
+            filterMonth = ['all', 'q1', 'q2', 'q3', 'q4'].includes(monthVal) ? monthVal : parseInt(monthVal);
             filterYear = parseInt(document.getElementById('filter-year').value);
             renderReports();
+        }
+
+        function checkFilterMatch(dateTs) {
+            const d = new Date(dateTs);
+            if (d.getFullYear() !== filterYear) return false;
+            if (filterMonth === 'all') return true;
+            
+            const m = d.getMonth();
+            if (filterMonth === 'q1') return m >= 0 && m <= 2;
+            if (filterMonth === 'q2') return m >= 3 && m <= 5;
+            if (filterMonth === 'q3') return m >= 6 && m <= 8;
+            if (filterMonth === 'q4') return m >= 9 && m <= 11;
+            
+            return m === filterMonth;
         }
 
         // --- RENDER UI ---
@@ -419,8 +638,7 @@
             // Apply Filters & Ignore Deleted Items
             const filteredReports = reportsData.filter(report => {
                 if(report.deleted) return false;
-                const d = new Date(report.reportedAt);
-                return d.getMonth() === filterMonth && d.getFullYear() === filterYear;
+                return checkFilterMatch(report.reportedAt);
             });
             
             if (filteredReports.length === 0) {
@@ -460,9 +678,25 @@
                 let cardTitle, expandedContent;
                 if (activeTab === 'laporan_harian') {
                     cardTitle = escapeHTML(report.title || 'Tanpa Judul');
-                    const textDesc = escapeHTML(report.text || '');
-                    expandedContent = `<div class="text-gray-800 text-sm whitespace-pre-wrap mb-4">${textDesc || "<span class='italic text-gray-400'>Tidak ada catatan</span>"}</div>`;
-                } else {
+                    const uraianDesc = escapeHTML(report.uraian || report.text || '-');
+                    const volDesc = escapeHTML(report.volume || '-');
+                    const buktiDesc = escapeHTML(report.bukti || '-');
+                    expandedContent = `
+                        <div class="mb-4 bg-gray-50 rounded-xl p-3 border border-gray-100 text-sm">
+                            <div class="text-xs text-gray-500 mb-1">Uraian Tugas / Kegiatan</div>
+                            <div class="font-medium text-gray-800 mb-3 whitespace-pre-wrap">${uraianDesc}</div>
+                            <div class="flex gap-4">
+                                <div class="flex-1">
+                                    <div class="text-xs text-gray-500 mb-1">Volume</div>
+                                    <div class="font-medium text-gray-800">${volDesc}</div>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="text-xs text-gray-500 mb-1">Bukti Dukung</div>
+                                    <div class="font-medium text-gray-800">${buktiDesc}</div>
+                                </div>
+                            </div>
+                        </div>`;
+                } else if (activeTab === 'akad_nikah') {
                     const catinLaki = escapeHTML(report.catinLaki || '-');
                     const catinPerempuan = escapeHTML(report.catinPerempuan || '-');
                     cardTitle = `${catinLaki} & ${catinPerempuan}`;
@@ -472,6 +706,114 @@
                             <div class="font-semibold text-gray-800 mb-3">${catinLaki}</div>
                             <div class="text-xs text-gray-500 mb-1">Mempelai Wanita</div>
                             <div class="font-semibold text-gray-800">${catinPerempuan}</div>
+                        </div>`;
+                } else if (activeTab === 'inventaris_kua') {
+                    const rNama = escapeHTML(report.invNama || 'Tanpa Nama');
+                    const rJenis = escapeHTML(report.invJenis || '-');
+                    const rKondisi = escapeHTML(report.invKondisi || '-');
+                    cardTitle = `${rNama} (${rJenis})`;
+                    
+                    let kondisiColor = 'text-gray-800';
+                    if (rKondisi === 'Baik') kondisiColor = 'text-green-600';
+                    else if (rKondisi === 'Kurang Baik') kondisiColor = 'text-yellow-600';
+                    else if (rKondisi === 'Rusak Berat') kondisiColor = 'text-red-600';
+
+                    expandedContent = `
+                        <div class="mb-4 bg-gray-50 rounded-xl p-3 border border-gray-100 text-sm">
+                            <div class="grid grid-cols-2 gap-3 mb-3">
+                                <div>
+                                    <div class="text-xs text-gray-500 mb-1">Kondisi</div>
+                                    <div class="font-medium ${kondisiColor} font-semibold">${rKondisi}</div>
+                                </div>
+                                <div>
+                                    <div class="text-xs text-gray-500 mb-1">Merk / Tipe</div>
+                                    <div class="font-medium text-gray-800">${escapeHTML(report.invMerk || '-')}</div>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3 mb-3">
+                                <div>
+                                    <div class="text-xs text-gray-500 mb-1">No. Sertifikat / Mesin</div>
+                                    <div class="font-medium text-gray-800">${escapeHTML(report.invNomor || '-')}</div>
+                                </div>
+                                <div>
+                                    <div class="text-xs text-gray-500 mb-1">Perolehan / Sumber</div>
+                                    <div class="font-medium text-gray-800">${escapeHTML(report.invPerolehan || '-')}</div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="text-xs text-gray-500 mb-1">Satuan (Volume / Luas)</div>
+                                <div class="font-medium text-gray-800">${escapeHTML(report.invSatuan || '-')}</div>
+                            </div>
+                        </div>`;
+                } else if (activeTab === 'surat_keluar') {
+                    cardTitle = `Tujuan: ${escapeHTML(report.skTujuan || '-')}`;
+                    expandedContent = `
+                        <div class="mb-4 bg-gray-50 rounded-xl p-3 border border-gray-100 text-sm">
+                            <div class="grid grid-cols-2 gap-3 mb-3">
+                                <div>
+                                    <div class="text-xs text-gray-500 mb-1">No. Urut</div>
+                                    <div class="font-medium text-gray-800">${escapeHTML(report.skNo || '-')}</div>
+                                </div>
+                                <div>
+                                    <div class="text-xs text-gray-500 mb-1">Tgl Surat</div>
+                                    <div class="font-medium text-gray-800">${escapeHTML(report.skTanggal || '-')}</div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="text-xs text-gray-500 mb-1">Nomor Surat</div>
+                                <div class="font-medium text-gray-800">${escapeHTML(report.skNomor || '-')}</div>
+                            </div>
+                            <div>
+                                <div class="text-xs text-gray-500 mb-1">Deskripsi Surat</div>
+                                <div class="font-medium text-gray-800 whitespace-pre-wrap">${escapeHTML(report.skDeskripsi || '-')}</div>
+                            </div>
+                        </div>`;
+                } else if (activeTab === 'surat_masuk') {
+                    cardTitle = `Dari: ${escapeHTML(report.smPembuat || '-')}`;
+                    expandedContent = `
+                        <div class="mb-4 bg-gray-50 rounded-xl p-3 border border-gray-100 text-sm">
+                            <div class="grid grid-cols-2 gap-3 mb-3">
+                                <div>
+                                    <div class="text-xs text-gray-500 mb-1">No. Urut</div>
+                                    <div class="font-medium text-gray-800">${escapeHTML(report.smNo || '-')}</div>
+                                </div>
+                                <div>
+                                    <div class="text-xs text-gray-500 mb-1">Tgl Surat</div>
+                                    <div class="font-medium text-gray-800">${escapeHTML(report.smTanggal || '-')}</div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="text-xs text-gray-500 mb-1">Nomor Surat</div>
+                                <div class="font-medium text-gray-800">${escapeHTML(report.smNomor || '-')}</div>
+                            </div>
+                            <div>
+                                <div class="text-xs text-gray-500 mb-1">Deskripsi Surat</div>
+                                <div class="font-medium text-gray-800 whitespace-pre-wrap">${escapeHTML(report.smDeskripsi || '-')}</div>
+                            </div>
+                        </div>`;
+                } else if (activeTab === 'catatan') {
+                    const cJenis = escapeHTML(report.catJenis || '-');
+                    cardTitle = `${escapeHTML(report.catJudul || 'Tanpa Judul')} (${cJenis})`;
+                    
+                    let rapatHTML = '';
+                    if (cJenis === 'Catatan Rapat') {
+                        rapatHTML = `
+                            <div class="grid grid-cols-2 gap-3 mb-3 pb-3 border-b border-gray-100">
+                                <div><div class="text-xs text-gray-500 mb-1">Tgl Pelaksanaan</div><div class="font-medium text-gray-800">${escapeHTML(report.catTanggal || '-')}</div></div>
+                                <div><div class="text-xs text-gray-500 mb-1">Tempat</div><div class="font-medium text-gray-800">${escapeHTML(report.catTempat || '-')}</div></div>
+                                <div><div class="text-xs text-gray-500 mb-1">Acara</div><div class="font-medium text-gray-800">${escapeHTML(report.catAcara || '-')}</div></div>
+                                <div><div class="text-xs text-gray-500 mb-1">Pembicara</div><div class="font-medium text-gray-800">${escapeHTML(report.catPembicara || '-')}</div></div>
+                            </div>
+                        `;
+                    }
+                    
+                    expandedContent = `
+                        <div class="mb-4 bg-gray-50 rounded-xl p-3 border border-gray-100 text-sm">
+                            ${rapatHTML}
+                            <div>
+                                <div class="text-xs text-gray-500 mb-1">Isi Catatan</div>
+                                <div class="font-medium text-gray-800 whitespace-pre-wrap">${escapeHTML(report.catIsi || '-')}</div>
+                            </div>
                         </div>`;
                 }
 
@@ -495,7 +837,7 @@
                                 ${imageHTML}
                                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mt-2">
                                     <div class="text-xs text-gray-400 space-y-1">
-                                        <div class="flex items-center gap-1.5"><i data-lucide="clock" class="w-3 h-3"></i> Tgl: ${timeStr}</div>
+                                        <div class="flex items-center gap-1.5"><i data-lucide="clock" class="w-3 h-3"></i> Input: ${timeStr}</div>
                                         ${report.updatedAt ? `<div class="flex items-center gap-1.5 text-orange-500/80"><i data-lucide="edit" class="w-3 h-3"></i> Edit: ${formatDate(report.updatedAt)}</div>` : ''}
                                     </div>
                                     <div class="flex gap-2 w-full sm:w-auto">
@@ -519,6 +861,7 @@
             } else { bar.classList.add('hidden'); }
         }
 
+        // --- STREAMING_CHUNK:Initialization and Drag-and-Drop Setup... ---
         // --- INITIALIZATION ---
         // Panggil saat load pertama kali
         reportsData = StorageDB.load(activeTab);
@@ -538,8 +881,7 @@
                 // Ambil item yang sedang ditampilkan saja (tanpa filter/deleted)
                 const oldVisibleItems = reportsData.filter(r => {
                     if (r.deleted) return false;
-                    const d = new Date(r.reportedAt);
-                    return d.getMonth() === filterMonth && d.getFullYear() === filterYear;
+                    return checkFilterMatch(r.reportedAt);
                 });
                 
                 const reorderedVisibleItems = newVisibleIds.map(id => oldVisibleItems.find(r => r.id === id));
@@ -547,8 +889,7 @@
                 let visibleIdx = 0;
                 reportsData = reportsData.map(report => {
                     if (report.deleted) return report;
-                    const d = new Date(report.reportedAt);
-                    if (d.getMonth() === filterMonth && d.getFullYear() === filterYear) {
+                    if (checkFilterMatch(report.reportedAt)) {
                         const reorderedItem = reorderedVisibleItems[visibleIdx++];
                         reorderedItem.updatedAt = Date.now(); // Perbarui tanggal agar susunan tersinkronisasi
                         return reorderedItem;
@@ -588,6 +929,7 @@
             }
         }
 
+        // --- STREAMING_CHUNK:Implementing Modal Validation and Data Handling... ---
         // --- FORM MODAL ---
         const checkSaveBtn = () => {
             const btn = document.getElementById('save-btn');
@@ -595,20 +937,82 @@
             let isValid = false;
 
             if (activeTab === 'laporan_harian') {
-                isValid = document.getElementById('input-title').value.trim() !== '';
-            } else {
+                isValid = document.getElementById('input-title').value.trim() !== '' && 
+                          document.getElementById('input-uraian').value.trim() !== '';
+            } else if (activeTab === 'akad_nikah') {
                 isValid = (document.getElementById('input-catin-laki').value.trim() !== '') && 
                           (document.getElementById('input-catin-perempuan').value.trim() !== '');
+            } else if (activeTab === 'inventaris_kua') {
+                isValid = document.getElementById('input-inv-jenis').value.trim() !== '' &&
+                          document.getElementById('input-inv-nama').value.trim() !== '' &&
+                          document.getElementById('input-inv-kondisi').value.trim() !== '';
+            } else if (activeTab === 'surat_keluar') {
+                isValid = document.getElementById('input-sk-no').value.trim() !== '' &&
+                          document.getElementById('input-sk-nomor').value.trim() !== '' &&
+                          document.getElementById('input-sk-tanggal').value.trim() !== '' &&
+                          document.getElementById('input-sk-tujuan').value.trim() !== '' &&
+                          document.getElementById('input-sk-deskripsi').value.trim() !== '';
+            } else if (activeTab === 'surat_masuk') {
+                isValid = document.getElementById('input-sm-no').value.trim() !== '' &&
+                          document.getElementById('input-sm-nomor').value.trim() !== '' &&
+                          document.getElementById('input-sm-tanggal').value.trim() !== '' &&
+                          document.getElementById('input-sm-pembuat').value.trim() !== '' &&
+                          document.getElementById('input-sm-deskripsi').value.trim() !== '';
+            } else if (activeTab === 'catatan') {
+                isValid = document.getElementById('input-cat-jenis').value.trim() !== '' &&
+                          document.getElementById('input-cat-judul').value.trim() !== '' &&
+                          document.getElementById('input-cat-isi').value.trim() !== '';
             }
 
             if (isValid && hasTime && !isUploading) btn.removeAttribute('disabled');
             else btn.setAttribute('disabled', 'true');
         };
+        
+        function toggleInvNamaField() {
+            const jenisVal = document.getElementById('input-inv-jenis').value;
+            const wrapper = document.getElementById('wrapper-inv-nama');
+            if (jenisVal) {
+                wrapper.classList.remove('hidden');
+            } else {
+                wrapper.classList.add('hidden');
+            }
+        }
+
+        function toggleCatatanRapat() {
+            const jenisVal = document.getElementById('input-cat-jenis').value;
+            const wrapper = document.getElementById('wrapper-catatan-rapat');
+            if (jenisVal === 'Catatan Rapat') {
+                wrapper.classList.remove('hidden');
+            } else {
+                wrapper.classList.add('hidden');
+            }
+        }
 
         // Attach listeners for validation
         document.getElementById('input-title').addEventListener('input', checkSaveBtn);
+        document.getElementById('input-uraian').addEventListener('input', checkSaveBtn);
+        // Akad Nikah
         document.getElementById('input-catin-laki').addEventListener('input', checkSaveBtn);
         document.getElementById('input-catin-perempuan').addEventListener('input', checkSaveBtn);
+        // Inventaris
+        document.getElementById('input-inv-nama').addEventListener('input', checkSaveBtn);
+        // Surat Keluar Event Listeners
+        document.getElementById('input-sk-no').addEventListener('input', checkSaveBtn);
+        document.getElementById('input-sk-nomor').addEventListener('input', checkSaveBtn);
+        document.getElementById('input-sk-tanggal').addEventListener('input', checkSaveBtn);
+        document.getElementById('input-sk-tujuan').addEventListener('input', checkSaveBtn);
+        document.getElementById('input-sk-deskripsi').addEventListener('input', checkSaveBtn);
+        // Surat Masuk Event Listeners
+        document.getElementById('input-sm-no').addEventListener('input', checkSaveBtn);
+        document.getElementById('input-sm-nomor').addEventListener('input', checkSaveBtn);
+        document.getElementById('input-sm-tanggal').addEventListener('input', checkSaveBtn);
+        document.getElementById('input-sm-pembuat').addEventListener('input', checkSaveBtn);
+        document.getElementById('input-sm-deskripsi').addEventListener('input', checkSaveBtn);
+        // Catatan Event Listeners
+        document.getElementById('input-cat-jenis').addEventListener('input', checkSaveBtn);
+        document.getElementById('input-cat-judul').addEventListener('input', checkSaveBtn);
+        document.getElementById('input-cat-isi').addEventListener('input', checkSaveBtn);
+        // Global
         document.getElementById('input-date').addEventListener('input', checkSaveBtn);
         document.getElementById('input-time').addEventListener('input', checkSaveBtn);
 
@@ -638,18 +1042,51 @@
             document.getElementById('form-title').innerText = report ? "Edit Data" : "Tambah Data";
             
             // Setup Fields visibility
+            document.getElementById('form-laporan-fields').classList.toggle('hidden', activeTab !== 'laporan_harian');
+            document.getElementById('form-akad-fields').classList.toggle('hidden', activeTab !== 'akad_nikah');
+            document.getElementById('form-inventaris-fields').classList.toggle('hidden', activeTab !== 'inventaris_kua');
+            document.getElementById('form-surat-keluar-fields').classList.toggle('hidden', activeTab !== 'surat_keluar');
+            document.getElementById('form-surat-masuk-fields').classList.toggle('hidden', activeTab !== 'surat_masuk');
+            document.getElementById('form-catatan-fields').classList.toggle('hidden', activeTab !== 'catatan');
+            
             if (activeTab === 'laporan_harian') {
-                document.getElementById('form-laporan-fields').classList.remove('hidden');
-                document.getElementById('form-akad-fields').classList.add('hidden');
-                
                 document.getElementById('input-title').value = report ? (report.title || '') : '';
-                document.getElementById('input-text').value = report ? (report.text || '') : '';
-            } else {
-                document.getElementById('form-laporan-fields').classList.add('hidden');
-                document.getElementById('form-akad-fields').classList.remove('hidden');
-                
+                document.getElementById('input-uraian').value = report ? (report.uraian || report.text || '') : '';
+                document.getElementById('input-volume').value = report ? (report.volume || '') : '';
+                document.getElementById('input-bukti').value = report ? (report.bukti || '') : '';
+            } else if (activeTab === 'akad_nikah') {
                 document.getElementById('input-catin-laki').value = report ? (report.catinLaki || '') : '';
                 document.getElementById('input-catin-perempuan').value = report ? (report.catinPerempuan || '') : '';
+            } else if (activeTab === 'inventaris_kua') {
+                document.getElementById('input-inv-jenis').value = report ? (report.invJenis || '') : '';
+                document.getElementById('input-inv-nama').value = report ? (report.invNama || '') : '';
+                document.getElementById('input-inv-merk').value = report ? (report.invMerk || '') : '';
+                document.getElementById('input-inv-nomor').value = report ? (report.invNomor || '') : '';
+                document.getElementById('input-inv-perolehan').value = report ? (report.invPerolehan || '') : '';
+                document.getElementById('input-inv-satuan').value = report ? (report.invSatuan || '') : '';
+                document.getElementById('input-inv-kondisi').value = report ? (report.invKondisi || '') : '';
+                toggleInvNamaField();
+            } else if (activeTab === 'surat_keluar') {
+                document.getElementById('input-sk-no').value = report ? (report.skNo || '') : '';
+                document.getElementById('input-sk-nomor').value = report ? (report.skNomor || '') : '';
+                document.getElementById('input-sk-tanggal').value = report ? (report.skTanggal || '') : '';
+                document.getElementById('input-sk-tujuan').value = report ? (report.skTujuan || '') : '';
+                document.getElementById('input-sk-deskripsi').value = report ? (report.skDeskripsi || '') : '';
+            } else if (activeTab === 'surat_masuk') {
+                document.getElementById('input-sm-no').value = report ? (report.smNo || '') : '';
+                document.getElementById('input-sm-nomor').value = report ? (report.smNomor || '') : '';
+                document.getElementById('input-sm-tanggal').value = report ? (report.smTanggal || '') : '';
+                document.getElementById('input-sm-pembuat').value = report ? (report.smPembuat || '') : '';
+                document.getElementById('input-sm-deskripsi').value = report ? (report.smDeskripsi || '') : '';
+            } else if (activeTab === 'catatan') {
+                document.getElementById('input-cat-jenis').value = report ? (report.catJenis || '') : '';
+                document.getElementById('input-cat-judul').value = report ? (report.catJudul || '') : '';
+                document.getElementById('input-cat-tanggal').value = report ? (report.catTanggal || '') : '';
+                document.getElementById('input-cat-tempat').value = report ? (report.catTempat || '') : '';
+                document.getElementById('input-cat-acara').value = report ? (report.catAcara || '') : '';
+                document.getElementById('input-cat-pembicara').value = report ? (report.catPembicara || '') : '';
+                document.getElementById('input-cat-isi').value = report ? (report.catIsi || '') : '';
+                toggleCatatanRapat();
             }
             
             // Setup Date & Time
@@ -670,6 +1107,7 @@
             document.getElementById('form-modal').classList.add('hidden'); 
         }
 
+        // --- STREAMING_CHUNK:Implementing Image Uploading... ---
         async function handleImageUpload(event) {
             const files = event.target.files;
             if (!files || files.length === 0) return;
@@ -701,6 +1139,7 @@
             checkSaveBtn();
         }
 
+        // --- STREAMING_CHUNK:Implementing Database Saving Mechanism... ---
         function saveReport() {
             const dateStr = document.getElementById('input-date').value;
             const timeStr = document.getElementById('input-time').value;
@@ -717,14 +1156,52 @@
             
             if (activeTab === 'laporan_harian') {
                 const title = document.getElementById('input-title').value.trim();
-                const text = document.getElementById('input-text').value.trim();
-                if (!title) return showToast("Judul wajib diisi.");
-                newData = { ...newData, title, text };
-            } else {
+                const uraian = document.getElementById('input-uraian').value.trim();
+                const volume = document.getElementById('input-volume').value.trim();
+                const bukti = document.getElementById('input-bukti').value.trim();
+                if (!title || !uraian) return showToast("Judul dan Uraian wajib diisi.");
+                newData = { ...newData, title, uraian, volume, bukti };
+            } else if (activeTab === 'akad_nikah') {
                 const catinLaki = document.getElementById('input-catin-laki').value.trim();
                 const catinPerempuan = document.getElementById('input-catin-perempuan').value.trim();
                 if (!catinLaki || !catinPerempuan) return showToast("Nama kedua catin wajib diisi.");
                 newData = { ...newData, catinLaki, catinPerempuan };
+            } else if (activeTab === 'inventaris_kua') {
+                const invJenis = document.getElementById('input-inv-jenis').value;
+                const invNama = document.getElementById('input-inv-nama').value.trim();
+                const invMerk = document.getElementById('input-inv-merk').value.trim();
+                const invNomor = document.getElementById('input-inv-nomor').value.trim();
+                const invPerolehan = document.getElementById('input-inv-perolehan').value.trim();
+                const invSatuan = document.getElementById('input-inv-satuan').value.trim();
+                const invKondisi = document.getElementById('input-inv-kondisi').value;
+                if (!invJenis || !invNama || !invKondisi) return showToast("Mohon lengkapi form inventaris wajib.");
+                newData = { ...newData, invJenis, invNama, invMerk, invNomor, invPerolehan, invSatuan, invKondisi };
+            } else if (activeTab === 'surat_keluar') {
+                const skNo = document.getElementById('input-sk-no').value.trim();
+                const skNomor = document.getElementById('input-sk-nomor').value.trim();
+                const skTanggal = document.getElementById('input-sk-tanggal').value;
+                const skTujuan = document.getElementById('input-sk-tujuan').value.trim();
+                const skDeskripsi = document.getElementById('input-sk-deskripsi').value.trim();
+                if (!skNo || !skNomor || !skTanggal || !skTujuan || !skDeskripsi) return showToast("Semua field Surat Keluar wajib diisi.");
+                newData = { ...newData, skNo, skNomor, skTanggal, skTujuan, skDeskripsi };
+            } else if (activeTab === 'surat_masuk') {
+                const smNo = document.getElementById('input-sm-no').value.trim();
+                const smNomor = document.getElementById('input-sm-nomor').value.trim();
+                const smTanggal = document.getElementById('input-sm-tanggal').value;
+                const smPembuat = document.getElementById('input-sm-pembuat').value.trim();
+                const smDeskripsi = document.getElementById('input-sm-deskripsi').value.trim();
+                if (!smNo || !smNomor || !smTanggal || !smPembuat || !smDeskripsi) return showToast("Semua field Surat Masuk wajib diisi.");
+                newData = { ...newData, smNo, smNomor, smTanggal, smPembuat, smDeskripsi };
+            } else if (activeTab === 'catatan') {
+                const catJenis = document.getElementById('input-cat-jenis').value;
+                const catJudul = document.getElementById('input-cat-judul').value.trim();
+                const catTanggal = document.getElementById('input-cat-tanggal').value.trim();
+                const catTempat = document.getElementById('input-cat-tempat').value.trim();
+                const catAcara = document.getElementById('input-cat-acara').value.trim();
+                const catPembicara = document.getElementById('input-cat-pembicara').value.trim();
+                const catIsi = document.getElementById('input-cat-isi').value.trim();
+                if (!catJenis || !catJudul || !catIsi) return showToast("Jenis, Judul, dan Isi Catatan wajib diisi.");
+                newData = { ...newData, catJenis, catJudul, catTanggal, catTempat, catAcara, catPembicara, catIsi };
             }
 
             if (editingId) {
@@ -779,16 +1256,17 @@
             }
         }
 
+        // --- STREAMING_CHUNK:Implementing Export to Microsoft Word Logic... ---
         // --- EXPORT TO WORD ---
         function openExportModal() { document.getElementById('export-modal').classList.remove('hidden'); }
         function closeExportModal() { document.getElementById('export-modal').classList.add('hidden'); }
 
-        function generateWordDoc(reportsToExport) {
+        function generateWordDoc(reportsToExport, useTable) {
             if (reportsToExport.length === 0) return;
-            const docTitle = activeTab === 'laporan_harian' ? 'Rekap Laporan Harian' : 'Rekap Akad Nikah';
+            const docTitle = activeTab === 'laporan_harian' ? 'Rekap Laporan Harian' : (activeTab === 'akad_nikah' ? 'Rekap Akad Nikah' : (activeTab === 'surat_keluar' ? 'Rekap Surat Keluar' : (activeTab === 'surat_masuk' ? 'Rekap Surat Masuk' : (activeTab === 'catatan' ? 'Rekap Catatan' : 'Rekap Inventaris KUA'))));
             
             let htmlContent = `
-                <div style="font-family: Arial, sans-serif;">
+                <div class="WordSection1" style="font-family: Arial, sans-serif;">
                 <h2 style="text-align: center;">${docTitle}</h2>
                 <hr style="border: 1px solid #ccc; margin-bottom: 20px;" />
             `;
@@ -796,33 +1274,411 @@
             // Urutkan dan pastikan memfilter yang deleted
             const sorted = [...reportsToExport].filter(r => !r.deleted).sort((a,b) => a.reportedAt - b.reportedAt);
 
-            sorted.forEach((report) => {
-                const reportImages = report.images || (report.image ? [report.image] : []);
-                
-                htmlContent += `<div style="margin-bottom: 30px; padding-bottom: 15px; border-bottom: 1px solid #eaeaea;">`;
-                htmlContent += `<p style="color: #666; font-size: 14px; margin-bottom: 5px;"><strong>Waktu:</strong> ${formatDate(report.reportedAt)}</p>`;
-                
+            if (useTable) {
+                // FORMAT DENGAN TABEL (Word Landscape)
                 if (activeTab === 'laporan_harian') {
-                    const rTitle = escapeHTML(report.title || 'Tanpa Judul');
-                    htmlContent += `<h3 style="margin-top: 0; color: #333;">${rTitle}</h3>`;
-                    htmlContent += `<p style="font-size: 14px; line-height: 1.6; white-space: pre-wrap;">${escapeHTML(report.text)}</p>`;
-                } else {
-                    htmlContent += `<p style="font-size: 16px; margin: 10px 0;"><strong>Mempelai Pria:</strong> ${escapeHTML(report.catinLaki)}</p>`;
-                    htmlContent += `<p style="font-size: 16px; margin: 10px 0;"><strong>Mempelai Wanita:</strong> ${escapeHTML(report.catinPerempuan)}</p>`;
-                }
-                
-                if (reportImages.length > 0) {
-                    htmlContent += `<div style="margin-top: 10px;">`;
-                    reportImages.forEach(imgSrc => {
-                        htmlContent += `<img src="${imgSrc}" style="max-width: 100%; max-height: 400px; margin-bottom: 10px; display: block;" />`;
+                    htmlContent += `
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;" border="1">
+                            <thead>
+                                <tr style="background-color: #f2f2f2;">
+                                    <th style="padding: 10px; text-align: center; border: 1px solid #000; width: 5%;">NO</th>
+                                    <th style="padding: 10px; text-align: left; border: 1px solid #000; width: 45%;">URAIAN TUGAS/ KEGIATAN</th>
+                                    <th style="padding: 10px; text-align: center; border: 1px solid #000; width: 15%;">VOLUME</th>
+                                    <th style="padding: 10px; text-align: left; border: 1px solid #000; width: 35%;">BUKTI DUKUNG</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    
+                    sorted.forEach((report, index) => {
+                        const rTitle = escapeHTML(report.title || 'Tanpa Judul');
+                        const timeStr = formatDate(report.reportedAt);
+                        const uraian = escapeHTML(report.uraian || report.text || '-').replace(/\n/g, '<br/>');
+                        const volume = escapeHTML(report.volume || '-');
+                        const bukti = escapeHTML(report.bukti || '-');
+                        
+                        let imageHTML = '';
+                        const reportImages = report.images || (report.image ? [report.image] : []);
+                        if (reportImages.length > 0) {
+                            imageHTML += `<div style="margin-top: 8px;">`;
+                            reportImages.forEach(imgSrc => {
+                                imageHTML += `<img src="${imgSrc}" style="max-width: 120px; max-height: 120px; margin-right: 5px; margin-bottom: 5px; display: inline-block;" />`;
+                            });
+                            imageHTML += `</div>`;
+                        }
+
+                        const uraianContent = `<strong style="color: #444;">[${timeStr}] ${rTitle}</strong><br/><br/>${uraian}`;
+
+                        htmlContent += `
+                            <tr>
+                                <td style="padding: 10px; text-align: center; border: 1px solid #000; vertical-align: top;">${index + 1}</td>
+                                <td style="padding: 10px; border: 1px solid #000; vertical-align: top;">${uraianContent}</td>
+                                <td style="padding: 10px; text-align: center; border: 1px solid #000; vertical-align: top;">${volume}</td>
+                                <td style="padding: 10px; border: 1px solid #000; vertical-align: top;">${bukti}${imageHTML}</td>
+                            </tr>
+                        `;
                     });
-                    htmlContent += `</div>`;
+                    
+                    htmlContent += `</tbody></table>`;
+                } else if (activeTab === 'akad_nikah') {
+                    htmlContent += `
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;" border="1">
+                            <thead>
+                                <tr style="background-color: #f2f2f2;">
+                                    <th style="padding: 10px; text-align: center; border: 1px solid #000; width: 5%;">NO</th>
+                                    <th style="padding: 10px; text-align: center; border: 1px solid #000; width: 20%;">WAKTU</th>
+                                    <th style="padding: 10px; text-align: center; border: 1px solid #000; width: 25%;">MEMPELAI PRIA</th>
+                                    <th style="padding: 10px; text-align: center; border: 1px solid #000; width: 25%;">MEMPELAI WANITA</th>
+                                    <th style="padding: 10px; text-align: center; border: 1px solid #000; width: 25%;">FOTO</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    sorted.forEach((report, index) => {
+                        const timeStr = formatDate(report.reportedAt);
+                        const catinLaki = escapeHTML(report.catinLaki || '-');
+                        const catinPerempuan = escapeHTML(report.catinPerempuan || '-');
+                        
+                        let imageHTML = '';
+                        const reportImages = report.images || (report.image ? [report.image] : []);
+                        if (reportImages.length > 0) {
+                            imageHTML += `<div style="margin-top: 8px;">`;
+                            reportImages.forEach(imgSrc => {
+                                imageHTML += `<img src="${imgSrc}" style="max-width: 100px; max-height: 100px; margin-right: 5px; margin-bottom: 5px; display: inline-block;" />`;
+                            });
+                            imageHTML += `</div>`;
+                        }
+
+                        htmlContent += `
+                            <tr>
+                                <td style="padding: 10px; text-align: center; border: 1px solid #000; vertical-align: top;">${index + 1}</td>
+                                <td style="padding: 10px; text-align: center; border: 1px solid #000; vertical-align: top;">${timeStr}</td>
+                                <td style="padding: 10px; border: 1px solid #000; vertical-align: top; text-align: center;">${catinLaki}</td>
+                                <td style="padding: 10px; border: 1px solid #000; vertical-align: top; text-align: center;">${catinPerempuan}</td>
+                                <td style="padding: 10px; border: 1px solid #000; vertical-align: top; text-align: center;">${imageHTML}</td>
+                            </tr>
+                        `;
+                    });
+                    htmlContent += `</tbody></table>`;
+                } else if (activeTab === 'inventaris_kua') {
+                    htmlContent += `
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;" border="1">
+                            <thead>
+                                <tr style="background-color: #f2f2f2;">
+                                    <th rowspan="2" style="padding: 10px; text-align: center; border: 1px solid #000; width: 5%;">NO</th>
+                                    <th rowspan="2" style="padding: 10px; text-align: center; border: 1px solid #000; width: 15%;">NAMA BARANG</th>
+                                    <th colspan="3" style="padding: 10px; text-align: center; border: 1px solid #000; width: 30%;">SPESIFIKASI BARANG</th>
+                                    <th rowspan="2" style="padding: 10px; text-align: center; border: 1px solid #000; width: 10%;">PEROLEHAN</th>
+                                    <th rowspan="2" style="padding: 10px; text-align: center; border: 1px solid #000; width: 10%;">SATUAN</th>
+                                    <th rowspan="2" style="padding: 10px; text-align: center; border: 1px solid #000; width: 10%;">KONDISI</th>
+                                    <th rowspan="2" style="padding: 10px; text-align: center; border: 1px solid #000; width: 20%;">FOTO</th>
+                                </tr>
+                                <tr style="background-color: #f2f2f2;">
+                                    <th style="padding: 5px; text-align: center; border: 1px solid #000;">JENIS</th>
+                                    <th style="padding: 5px; text-align: center; border: 1px solid #000;">MERK/TIPE</th>
+                                    <th style="padding: 5px; text-align: center; border: 1px solid #000;">NO. SERTIFIKAT/MESIN</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    
+                    sorted.forEach((report, index) => {
+                        const rNama = escapeHTML(report.invNama || '-');
+                        const rJenis = escapeHTML(report.invJenis || '-');
+                        const rMerk = escapeHTML(report.invMerk || '-');
+                        const rNomor = escapeHTML(report.invNomor || '-');
+                        
+                        const perolehan = escapeHTML(report.invPerolehan || '-');
+                        const satuan = escapeHTML(report.invSatuan || '-');
+                        const kondisi = escapeHTML(report.invKondisi || '-');
+                        
+                        let imageHTML = '';
+                        const reportImages = report.images || (report.image ? [report.image] : []);
+                        if (reportImages.length > 0) {
+                            imageHTML += `<div style="margin-top: 8px;">`;
+                            reportImages.forEach(imgSrc => {
+                                imageHTML += `<img src="${imgSrc}" style="max-width: 100px; max-height: 100px; margin-right: 5px; margin-bottom: 5px; display: inline-block;" />`;
+                            });
+                            imageHTML += `</div>`;
+                        }
+
+                        htmlContent += `
+                            <tr>
+                                <td style="padding: 10px; text-align: center; border: 1px solid #000; vertical-align: top;">${index + 1}</td>
+                                <td style="padding: 10px; border: 1px solid #000; vertical-align: top;"><strong>${rNama}</strong></td>
+                                <td style="padding: 10px; border: 1px solid #000; vertical-align: top;">${rJenis}</td>
+                                <td style="padding: 10px; border: 1px solid #000; vertical-align: top;">${rMerk}</td>
+                                <td style="padding: 10px; border: 1px solid #000; vertical-align: top;">${rNomor}</td>
+                                <td style="padding: 10px; text-align: center; border: 1px solid #000; vertical-align: top;">${perolehan}</td>
+                                <td style="padding: 10px; text-align: center; border: 1px solid #000; vertical-align: top;">${satuan}</td>
+                                <td style="padding: 10px; text-align: center; border: 1px solid #000; vertical-align: top;">${kondisi}</td>
+                                <td style="padding: 10px; border: 1px solid #000; vertical-align: top; text-align: center;">${imageHTML}</td>
+                            </tr>
+                        `;
+                    });
+                    
+                    htmlContent += `</tbody></table>`;
+                } else if (activeTab === 'surat_keluar') {
+                    htmlContent += `
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;" border="1">
+                            <thead>
+                                <tr style="background-color: #f2f2f2;">
+                                    <th style="padding: 10px; text-align: center; border: 1px solid #000; width: 5%;">NO</th>
+                                    <th style="padding: 10px; text-align: center; border: 1px solid #000; width: 10%;">NO. URUT</th>
+                                    <th style="padding: 10px; text-align: left; border: 1px solid #000; width: 20%;">NOMOR SURAT</th>
+                                    <th style="padding: 10px; text-align: center; border: 1px solid #000; width: 10%;">TANGGAL SURAT</th>
+                                    <th style="padding: 10px; text-align: left; border: 1px solid #000; width: 20%;">TUJUAN SURAT</th>
+                                    <th style="padding: 10px; text-align: left; border: 1px solid #000; width: 20%;">DESKRIPSI SURAT</th>
+                                    <th style="padding: 10px; text-align: center; border: 1px solid #000; width: 15%;">FOTO</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    
+                    sorted.forEach((report, index) => {
+                        const skNo = escapeHTML(report.skNo || '-');
+                        const skNomor = escapeHTML(report.skNomor || '-');
+                        const skTanggal = escapeHTML(report.skTanggal || '-');
+                        const skTujuan = escapeHTML(report.skTujuan || '-');
+                        const skDeskripsi = escapeHTML(report.skDeskripsi || '-').replace(/\n/g, '<br/>');
+                        
+                        let imageHTML = '';
+                        const reportImages = report.images || (report.image ? [report.image] : []);
+                        if (reportImages.length > 0) {
+                            imageHTML += `<div style="margin-top: 8px;">`;
+                            reportImages.forEach(imgSrc => {
+                                imageHTML += `<img src="${imgSrc}" style="max-width: 100px; max-height: 100px; margin-right: 5px; margin-bottom: 5px; display: inline-block;" />`;
+                            });
+                            imageHTML += `</div>`;
+                        }
+
+                        htmlContent += `
+                            <tr>
+                                <td style="padding: 10px; text-align: center; border: 1px solid #000; vertical-align: top;">${index + 1}</td>
+                                <td style="padding: 10px; text-align: center; border: 1px solid #000; vertical-align: top;">${skNo}</td>
+                                <td style="padding: 10px; border: 1px solid #000; vertical-align: top;">${skNomor}</td>
+                                <td style="padding: 10px; text-align: center; border: 1px solid #000; vertical-align: top;">${skTanggal}</td>
+                                <td style="padding: 10px; border: 1px solid #000; vertical-align: top;">${skTujuan}</td>
+                                <td style="padding: 10px; border: 1px solid #000; vertical-align: top;">${skDeskripsi}</td>
+                                <td style="padding: 10px; border: 1px solid #000; vertical-align: top; text-align: center;">${imageHTML}</td>
+                            </tr>
+                        `;
+                    });
+                    
+                    htmlContent += `</tbody></table>`;
+                } else if (activeTab === 'surat_masuk') {
+                    htmlContent += `
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;" border="1">
+                            <thead>
+                                <tr style="background-color: #f2f2f2;">
+                                    <th style="padding: 10px; text-align: center; border: 1px solid #000; width: 5%;">NO</th>
+                                    <th style="padding: 10px; text-align: center; border: 1px solid #000; width: 10%;">NO. URUT</th>
+                                    <th style="padding: 10px; text-align: left; border: 1px solid #000; width: 20%;">NOMOR SURAT</th>
+                                    <th style="padding: 10px; text-align: center; border: 1px solid #000; width: 10%;">TANGGAL SURAT</th>
+                                    <th style="padding: 10px; text-align: left; border: 1px solid #000; width: 20%;">PEMBUAT / TTD SURAT</th>
+                                    <th style="padding: 10px; text-align: left; border: 1px solid #000; width: 20%;">DESKRIPSI SURAT</th>
+                                    <th style="padding: 10px; text-align: center; border: 1px solid #000; width: 15%;">FOTO</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    
+                    sorted.forEach((report, index) => {
+                        const smNo = escapeHTML(report.smNo || '-');
+                        const smNomor = escapeHTML(report.smNomor || '-');
+                        const smTanggal = escapeHTML(report.smTanggal || '-');
+                        const smPembuat = escapeHTML(report.smPembuat || '-');
+                        const smDeskripsi = escapeHTML(report.smDeskripsi || '-').replace(/\n/g, '<br/>');
+                        
+                        let imageHTML = '';
+                        const reportImages = report.images || (report.image ? [report.image] : []);
+                        if (reportImages.length > 0) {
+                            imageHTML += `<div style="margin-top: 8px;">`;
+                            reportImages.forEach(imgSrc => {
+                                imageHTML += `<img src="${imgSrc}" style="max-width: 100px; max-height: 100px; margin-right: 5px; margin-bottom: 5px; display: inline-block;" />`;
+                            });
+                            imageHTML += `</div>`;
+                        }
+
+                        htmlContent += `
+                            <tr>
+                                <td style="padding: 10px; text-align: center; border: 1px solid #000; vertical-align: top;">${index + 1}</td>
+                                <td style="padding: 10px; text-align: center; border: 1px solid #000; vertical-align: top;">${smNo}</td>
+                                <td style="padding: 10px; border: 1px solid #000; vertical-align: top;">${smNomor}</td>
+                                <td style="padding: 10px; text-align: center; border: 1px solid #000; vertical-align: top;">${smTanggal}</td>
+                                <td style="padding: 10px; border: 1px solid #000; vertical-align: top;">${smPembuat}</td>
+                                <td style="padding: 10px; border: 1px solid #000; vertical-align: top;">${smDeskripsi}</td>
+                                <td style="padding: 10px; border: 1px solid #000; vertical-align: top; text-align: center;">${imageHTML}</td>
+                            </tr>
+                        `;
+                    });
+                    
+                    htmlContent += `</tbody></table>`;
+                } else if (activeTab === 'catatan') {
+                    htmlContent += `
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;" border="1">
+                            <thead>
+                                <tr style="background-color: #f2f2f2;">
+                                    <th style="padding: 10px; text-align: center; border: 1px solid #000; width: 5%;">NO</th>
+                                    <th style="padding: 10px; text-align: left; border: 1px solid #000; width: 25%;">JUDUL & JENIS</th>
+                                    <th style="padding: 10px; text-align: left; border: 1px solid #000; width: 25%;">INFO RAPAT (JIKA ADA)</th>
+                                    <th style="padding: 10px; text-align: left; border: 1px solid #000; width: 30%;">ISI CATATAN</th>
+                                    <th style="padding: 10px; text-align: center; border: 1px solid #000; width: 15%;">FOTO</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    
+                    sorted.forEach((report, index) => {
+                        const cJenis = escapeHTML(report.catJenis || '-');
+                        const cJudul = escapeHTML(report.catJudul || '-');
+                        const cIsi = escapeHTML(report.catIsi || '-').replace(/\n/g, '<br/>');
+                        
+                        let infoRapat = '-';
+                        if (cJenis === 'Catatan Rapat') {
+                            infoRapat = `<strong>Tgl:</strong> ${escapeHTML(report.catTanggal || '-')}<br/><strong>Tempat:</strong> ${escapeHTML(report.catTempat || '-')}<br/><strong>Acara:</strong> ${escapeHTML(report.catAcara || '-')}<br/><strong>Pembicara:</strong> ${escapeHTML(report.catPembicara || '-')}`;
+                        }
+                        
+                        let imageHTML = '';
+                        const reportImages = report.images || (report.image ? [report.image] : []);
+                        if (reportImages.length > 0) {
+                            imageHTML += `<div style="margin-top: 8px;">`;
+                            reportImages.forEach(imgSrc => {
+                                imageHTML += `<img src="${imgSrc}" style="max-width: 100px; max-height: 100px; margin-right: 5px; margin-bottom: 5px; display: inline-block;" />`;
+                            });
+                            imageHTML += `</div>`;
+                        }
+
+                        htmlContent += `
+                            <tr>
+                                <td style="padding: 10px; text-align: center; border: 1px solid #000; vertical-align: top;">${index + 1}</td>
+                                <td style="padding: 10px; border: 1px solid #000; vertical-align: top;"><strong>${cJudul}</strong><br/>(${cJenis})</td>
+                                <td style="padding: 10px; border: 1px solid #000; vertical-align: top;">${infoRapat}</td>
+                                <td style="padding: 10px; border: 1px solid #000; vertical-align: top;">${cIsi}</td>
+                                <td style="padding: 10px; border: 1px solid #000; vertical-align: top; text-align: center;">${imageHTML}</td>
+                            </tr>
+                        `;
+                    });
+                    
+                    htmlContent += `</tbody></table>`;
                 }
-                htmlContent += `</div>`;
-            });
+
+            } else {
+                // FORMAT TANPA TABEL (Word Portrait)
+                sorted.forEach((report) => {
+                    const timeStr = formatDate(report.reportedAt);
+                    const reportImages = report.images || (report.image ? [report.image] : []);
+                    let imageHTML = '';
+                    if (reportImages.length > 0) {
+                        imageHTML += `<div style="margin-top: 10px;">`;
+                        reportImages.forEach(imgSrc => {
+                            imageHTML += `<img src="${imgSrc}" style="max-width: 100%; max-height: 400px; margin-bottom: 10px; display: block;" />`;
+                        });
+                        imageHTML += `</div>`;
+                    }
+
+                    htmlContent += `<div style="margin-bottom: 30px; padding-bottom: 15px; border-bottom: 1px solid #eaeaea;">`;
+                    htmlContent += `<p style="color: #666; font-size: 14px; margin-bottom: 5px;"><strong>Waktu / Sistem:</strong> ${timeStr}</p>`;
+
+                    if (activeTab === 'laporan_harian') {
+                        const rTitle = escapeHTML(report.title || 'Tanpa Judul');
+                        const uraian = escapeHTML(report.uraian || report.text || '-').replace(/\n/g, '<br/>');
+                        const volume = escapeHTML(report.volume || '-');
+                        const bukti = escapeHTML(report.bukti || '-');
+
+                        htmlContent += `<h3 style="margin-top: 0; color: #333;">${rTitle}</h3>`;
+                        htmlContent += `<p style="font-size: 14px; line-height: 1.6; margin-bottom: 10px; white-space: pre-wrap;"><strong>Uraian Tugas/Kegiatan:</strong><br/>${uraian}</p>`;
+                        htmlContent += `<p style="font-size: 14px; margin: 5px 0;"><strong>Volume:</strong> ${volume}</p>`;
+                        htmlContent += `<p style="font-size: 14px; margin: 5px 0;"><strong>Bukti Dukung:</strong> ${bukti}</p>`;
+                    } else if (activeTab === 'akad_nikah') {
+                        htmlContent += `<p style="font-size: 16px; margin: 10px 0;"><strong>Mempelai Pria:</strong> ${escapeHTML(report.catinLaki)}</p>`;
+                        htmlContent += `<p style="font-size: 16px; margin: 10px 0;"><strong>Mempelai Wanita:</strong> ${escapeHTML(report.catinPerempuan)}</p>`;
+                    } else if (activeTab === 'inventaris_kua') {
+                        const rNama = escapeHTML(report.invNama || 'Tanpa Nama');
+                        const rJenis = escapeHTML(report.invJenis || '-');
+                        const rMerk = escapeHTML(report.invMerk || '-');
+                        const rNomor = escapeHTML(report.invNomor || '-');
+                        const perolehan = escapeHTML(report.invPerolehan || '-');
+                        const satuan = escapeHTML(report.invSatuan || '-');
+                        const kondisi = escapeHTML(report.invKondisi || '-');
+
+                        htmlContent += `<h3 style="margin-top: 0; color: #333;">${rNama}</h3>`;
+                        htmlContent += `<ul style="font-size: 14px; line-height: 1.6; padding-left: 20px;">`;
+                        htmlContent += `<li><strong>Jenis:</strong> ${rJenis}</li>`;
+                        htmlContent += `<li><strong>Merk/Tipe:</strong> ${rMerk}</li>`;
+                        htmlContent += `<li><strong>No. Sertifikat/Mesin:</strong> ${rNomor}</li>`;
+                        htmlContent += `<li><strong>Tahun Perolehan:</strong> ${perolehan}</li>`;
+                        htmlContent += `<li><strong>Satuan:</strong> ${satuan}</li>`;
+                        htmlContent += `<li><strong>Kondisi:</strong> ${kondisi}</li>`;
+                        htmlContent += `</ul>`;
+                    } else if (activeTab === 'surat_keluar') {
+                        htmlContent += `<h3 style="margin-top: 0; color: #333;">Tujuan: ${escapeHTML(report.skTujuan || '-')}</h3>`;
+                        htmlContent += `<ul style="font-size: 14px; line-height: 1.6; padding-left: 20px;">`;
+                        htmlContent += `<li><strong>No. Urut:</strong> ${escapeHTML(report.skNo || '-')}</li>`;
+                        htmlContent += `<li><strong>Nomor Surat:</strong> ${escapeHTML(report.skNomor || '-')}</li>`;
+                        htmlContent += `<li><strong>Tanggal Surat:</strong> ${escapeHTML(report.skTanggal || '-')}</li>`;
+                        htmlContent += `<li><strong>Deskripsi Surat:</strong> ${escapeHTML(report.skDeskripsi || '-')}</li>`;
+                        htmlContent += `</ul>`;
+                    } else if (activeTab === 'surat_masuk') {
+                        htmlContent += `<h3 style="margin-top: 0; color: #333;">Dari: ${escapeHTML(report.smPembuat || '-')}</h3>`;
+                        htmlContent += `<ul style="font-size: 14px; line-height: 1.6; padding-left: 20px;">`;
+                        htmlContent += `<li><strong>No. Urut:</strong> ${escapeHTML(report.smNo || '-')}</li>`;
+                        htmlContent += `<li><strong>Nomor Surat:</strong> ${escapeHTML(report.smNomor || '-')}</li>`;
+                        htmlContent += `<li><strong>Tanggal Surat:</strong> ${escapeHTML(report.smTanggal || '-')}</li>`;
+                        htmlContent += `<li><strong>Deskripsi Surat:</strong> ${escapeHTML(report.smDeskripsi || '-')}</li>`;
+                        htmlContent += `</ul>`;
+                    } else if (activeTab === 'catatan') {
+                        htmlContent += `<h3 style="margin-top: 0; color: #333;">${escapeHTML(report.catJudul || '-')} (${escapeHTML(report.catJenis || '-')})</h3>`;
+                        
+                        if (report.catJenis === 'Catatan Rapat') {
+                            htmlContent += `<ul style="font-size: 14px; line-height: 1.6; padding-left: 20px;">`;
+                            htmlContent += `<li><strong>Tanggal Pelaksanaan:</strong> ${escapeHTML(report.catTanggal || '-')}</li>`;
+                            htmlContent += `<li><strong>Tempat:</strong> ${escapeHTML(report.catTempat || '-')}</li>`;
+                            htmlContent += `<li><strong>Acara:</strong> ${escapeHTML(report.catAcara || '-')}</li>`;
+                            htmlContent += `<li><strong>Pembicara:</strong> ${escapeHTML(report.catPembicara || '-')}</li>`;
+                            htmlContent += `</ul>`;
+                        }
+                        
+                        htmlContent += `<p style="font-size: 14px; line-height: 1.6; margin-top: 10px; white-space: pre-wrap;"><strong>Isi Catatan:</strong><br/>${escapeHTML(report.catIsi || '-').replace(/\n/g, '<br/>')}</p>`;
+                    }
+                    
+                    if (imageHTML) htmlContent += imageHTML;
+                    htmlContent += `</div>`;
+                });
+            }
+            
             htmlContent += `</div>`;
 
-            const header = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>Rekap</title></head><body>";
+            // Konfigurasi CSS berdasarkan opsi Layout yang dipilih
+            let pageCss = "";
+            if (useTable) {
+                // Table = Landscape 
+                pageCss = `
+                    @page WordSection1 {
+                        size: 841.9pt 595.3pt;
+                        mso-page-orientation: landscape;
+                        margin: 36.0pt 36.0pt 36.0pt 36.0pt;
+                    }
+                    div.WordSection1 { page: WordSection1; }
+                `;
+            } else {
+                // Tanpa Table = Portrait
+                pageCss = `
+                    @page WordSection1 {
+                        size: 595.3pt 841.9pt;
+                        margin: 36.0pt 36.0pt 36.0pt 36.0pt;
+                    }
+                    div.WordSection1 { page: WordSection1; }
+                `;
+            }
+
+            const header = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+            <head>
+                <meta charset='utf-8'>
+                <title>Rekap</title>
+                <style>${pageCss}</style>
+            </head><body>`;
+            
             const source = 'data:application/vnd.ms-word;charset=utf-8,' + encodeURIComponent(header + htmlContent + "</body></html>");
             
             const link = document.createElement("a");
@@ -844,7 +1700,8 @@
             const filtered = reportsData.filter(r => !r.deleted && r.reportedAt >= tsStart && r.reportedAt <= tsEnd);
             if (filtered.length === 0) return showToast("Tidak ada data di tanggal tersebut.");
             
-            generateWordDoc(filtered);
+            const useTable = document.getElementById('export-format').value === 'table';
+            generateWordDoc(filtered, useTable);
             closeExportModal();
             showToast("Berhasil diekspor!");
         }
@@ -866,11 +1723,15 @@
         function exportSelected() {
             if (selectedIds.length === 0) return showToast("Pilih minimal 1 data!");
             const filtered = reportsData.filter(r => selectedIds.includes(r.id));
-            generateWordDoc(filtered);
+            
+            const useTable = document.getElementById('export-format-bar').value === 'table';
+            generateWordDoc(filtered, useTable);
+            
             cancelSelection();
             showToast("Data terpilih diekspor!");
         }
 
+        // --- STREAMING_CHUNK:Implementing Database JSON Backup and Restore... ---
         // --- EXPORT & IMPORT JSON (ADVANCED SYNC) ---
         
         // Fungsi pembantu untuk menggabung data (Merge)
@@ -894,7 +1755,7 @@
                             updateCount++;
                         }
                     } else {
-                        // Jika item tidak ada di lokal (misal D, E, F dari PC), maka push
+                        // Jika item tidak ada di lokal (misal dari device lain), maka masukkan
                         localArray.push(item);
                         newCount++;
                     }
@@ -908,7 +1769,11 @@
             // Kita gabungkan semua memori (semua tab) untuk full backup
             const allData = {
                 laporan_harian: StorageDB.load('laporan_harian'),
-                akad_nikah: StorageDB.load('akad_nikah')
+                akad_nikah: StorageDB.load('akad_nikah'),
+                inventaris_kua: StorageDB.load('inventaris_kua'),
+                surat_keluar: StorageDB.load('surat_keluar'),
+                surat_masuk: StorageDB.load('surat_masuk'),
+                catatan: StorageDB.load('catatan')
             };
             
             const dataStr = JSON.stringify(allData, null, 2);
@@ -955,7 +1820,7 @@
                                 totalNew += newCount;
                                 totalUpdate += updateCount;
                                 
-                                // Jika tab yang disinkron adalah tab yang sedang aktif di UI, update di memory
+                                // Jika tab yang disinkron adalah tab yang sedang aktif di UI, update di memory UI
                                 if (tabName === activeTab) {
                                     reportsData = mergedArray;
                                 }
