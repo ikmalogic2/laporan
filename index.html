@@ -3,20 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Laporan Harian</title>
+    <title>Sistem Pencatatan</title>
     
     <!-- Google Fonts: Space Grotesk -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Tailwind CSS (via CDN - Aman untuk static hosting) -->
+    <!-- Tailwind CSS (via CDN) -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Lucide Icons (via CDN) -->
+    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     
-    <!-- SortableJS untuk Drag & Drop (via CDN) -->
+    <!-- SortableJS untuk Drag & Drop -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     
     <style>
@@ -47,67 +47,104 @@
         .chevron-icon { transition: transform 0.3s ease; }
         .expanded .chevron-icon { transform: rotate(180deg); }
         /* Drag styles */
-        .sortable-ghost { opacity: 0.4; transform: scale(0.98); }
+        .sortable-ghost { opacity: 0.4; transform: scale(0.98); border: 2px dashed #007AFF; }
         .sortable-drag { cursor: grabbing !important; }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
     </style>
 </head>
-<body class="text-gray-900 pb-24">
+<body class="flex h-screen w-full overflow-hidden text-gray-900">
 
-    <!-- Header -->
-    <header class="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-gray-200 px-4 py-4 flex justify-between items-center shadow-sm">
-        <h1 class="text-xl font-semibold tracking-tight">Laporan Harian</h1>
-        <div class="flex gap-2">
-            <button onclick="openExportModal()" class="text-gray-600 bg-gray-100 p-2 rounded-full hover:bg-gray-200 transition-colors" title="Export Data">
-                <i data-lucide="download" class="w-6 h-6"></i>
-            </button>
-            <button onclick="openFormModal()" class="text-[#007AFF] bg-[#007AFF]/10 p-2 rounded-full hover:bg-[#007AFF]/20 transition-colors">
-                <i data-lucide="plus" class="w-6 h-6"></i>
+    <!-- Sidebar Overlay (Mobile) -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-40 hidden md:hidden" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-200 z-50 transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 flex flex-col shadow-lg md:shadow-none">
+        <div class="p-6 pb-2 flex justify-between items-center">
+            <h2 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+                <i data-lucide="book-marked" class="text-[#007AFF]"></i> e-Catatan
+            </h2>
+            <button class="md:hidden text-gray-500 hover:text-gray-800" onclick="toggleSidebar()">
+                <i data-lucide="x"></i>
             </button>
         </div>
-    </header>
-
-    <!-- Main Content -->
-    <main id="app-container" class="p-4 w-full md:max-w-5xl lg:max-w-7xl mx-auto flex flex-col gap-4">
         
-        <!-- Filter Container -->
-        <div class="flex justify-between items-center bg-white p-3 rounded-2xl shadow-sm border border-gray-100 w-full">
-            <div class="flex gap-3 w-full items-center">
-                <i data-lucide="calendar-search" class="w-5 h-5 text-[#007AFF] ml-2"></i>
-                <select id="filter-month" onchange="updateFilters()" class="flex-1 bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-sm outline-none focus:border-[#007AFF] text-gray-800 font-medium cursor-pointer">
-                    <option value="0">Januari</option>
-                    <option value="1">Februari</option>
-                    <option value="2">Maret</option>
-                    <option value="3">April</option>
-                    <option value="4">Mei</option>
-                    <option value="5">Juni</option>
-                    <option value="6">Juli</option>
-                    <option value="7">Agustus</option>
-                    <option value="8">September</option>
-                    <option value="9">Oktober</option>
-                    <option value="10">November</option>
-                    <option value="11">Desember</option>
-                </select>
-                <select id="filter-year" onchange="updateFilters()" class="w-1/3 sm:w-1/4 bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-sm outline-none focus:border-[#007AFF] text-gray-800 font-medium cursor-pointer">
-                    <!-- Dinamis -->
-                </select>
-            </div>
+        <div class="px-6 py-4">
+            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Menu Utama</p>
+            <nav class="space-y-2">
+                <button onclick="switchTab('laporan_harian')" id="tab-laporan_harian" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left font-semibold transition-all bg-[#007AFF]/10 text-[#007AFF]">
+                    <i data-lucide="file-text" class="w-5 h-5"></i> Laporan Harian
+                </button>
+                <button onclick="switchTab('akad_nikah')" id="tab-akad_nikah" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left font-medium text-gray-600 hover:bg-gray-50 transition-all">
+                    <i data-lucide="heart-handshake" class="w-5 h-5"></i> Akad Nikah
+                </button>
+            </nav>
         </div>
+    </aside>
 
-        <div id="empty-state" class="hidden text-center p-12 text-gray-400 bg-white rounded-2xl shadow-sm border border-gray-100 col-span-full w-full max-w-2xl mx-auto mt-2">
-            <i data-lucide="image" class="w-12 h-12 mx-auto mb-4 opacity-50"></i>
-            <p>Belum ada laporan di bulan ini.</p>
-            <p class="text-sm mt-2">Ketuk tombol + untuk mulai mencatat.</p>
-        </div>
-        <!-- Reports Container (Menerapkan responsive Grid) -->
-        <div id="reports-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 items-start"></div>
-    </main>
+    <!-- Main Workspace -->
+    <div class="flex-1 flex flex-col h-screen overflow-hidden bg-[#F2F2F7]">
+        
+        <!-- Header -->
+        <header class="bg-white/80 backdrop-blur-md border-b border-gray-200 px-4 py-4 flex justify-between items-center shadow-sm z-10">
+            <div class="flex items-center gap-3">
+                <button onclick="toggleSidebar()" class="md:hidden text-gray-600 p-1 rounded-lg hover:bg-gray-100">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+                <h1 id="header-title" class="text-xl font-semibold tracking-tight">Laporan Harian</h1>
+            </div>
+            
+            <div class="flex gap-2">
+                <button onclick="openExportModal()" class="text-gray-600 bg-gray-100 p-2 rounded-full hover:bg-gray-200 transition-colors" title="Export Data">
+                    <i data-lucide="download" class="w-6 h-6"></i>
+                </button>
+                <button onclick="openFormModal()" class="text-[#007AFF] bg-[#007AFF]/10 p-2 rounded-full hover:bg-[#007AFF]/20 transition-colors">
+                    <i data-lucide="plus" class="w-6 h-6"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content Scrollable -->
+        <main id="app-container" class="p-4 w-full md:max-w-5xl lg:max-w-7xl mx-auto flex-1 overflow-y-auto pb-32">
+            <!-- Filter Container -->
+            <div class="flex justify-between items-center bg-white p-3 rounded-2xl shadow-sm border border-gray-100 w-full mb-4">
+                <div class="flex gap-3 w-full items-center">
+                    <i data-lucide="calendar-search" class="w-5 h-5 text-[#007AFF] ml-2"></i>
+                    <select id="filter-month" onchange="updateFilters()" class="flex-1 bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-sm outline-none focus:border-[#007AFF] text-gray-800 font-medium cursor-pointer">
+                        <option value="0">Januari</option>
+                        <option value="1">Februari</option>
+                        <option value="2">Maret</option>
+                        <option value="3">April</option>
+                        <option value="4">Mei</option>
+                        <option value="5">Juni</option>
+                        <option value="6">Juli</option>
+                        <option value="7">Agustus</option>
+                        <option value="8">September</option>
+                        <option value="9">Oktober</option>
+                        <option value="10">November</option>
+                        <option value="11">Desember</option>
+                    </select>
+                    <select id="filter-year" onchange="updateFilters()" class="w-1/3 sm:w-1/4 bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-sm outline-none focus:border-[#007AFF] text-gray-800 font-medium cursor-pointer">
+                        <!-- Dinamis -->
+                    </select>
+                </div>
+            </div>
+
+            <div id="empty-state" class="hidden text-center p-12 text-gray-400 bg-white rounded-2xl shadow-sm border border-gray-100 col-span-full w-full max-w-2xl mx-auto mt-2">
+                <i data-lucide="folder-open" class="w-12 h-12 mx-auto mb-4 opacity-50"></i>
+                <p>Belum ada data di bulan ini.</p>
+                <p class="text-sm mt-2">Ketuk tombol + untuk mulai mencatat.</p>
+            </div>
+            
+            <!-- Reports Container -->
+            <div id="reports-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 items-start pb-10"></div>
+        </main>
+    </div>
 
     <!-- Selection Bottom Bar -->
-    <div id="selection-bar" class="hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-40 animate-slide-up">
+    <div id="selection-bar" class="hidden fixed bottom-0 left-0 md:left-64 right-0 bg-white border-t border-gray-200 p-4 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-40 animate-slide-up">
         <div class="w-full md:max-w-3xl lg:max-w-5xl mx-auto flex justify-between items-center">
-            <span id="selection-count" class="font-medium text-gray-700">0 laporan dipilih</span>
+            <span id="selection-count" class="font-medium text-gray-700">0 data dipilih</span>
             <div class="flex gap-3">
                 <button onclick="cancelSelection()" class="px-4 py-2 text-gray-500 font-medium hover:bg-gray-100 rounded-lg transition-colors">Batal</button>
                 <button onclick="exportSelected()" class="px-4 py-2 bg-[#007AFF] text-white font-medium rounded-lg hover:bg-blue-600 transition-colors shadow-sm">Export Doc</button>
@@ -126,45 +163,63 @@
         <div class="relative bg-white w-full md:max-w-3xl lg:max-w-4xl sm:rounded-2xl rounded-t-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-slide-up">
             <div class="flex justify-between items-center p-4 border-b border-gray-100">
                 <button onclick="closeFormModal()" class="text-gray-500 hover:text-gray-700"><i data-lucide="x" class="w-6 h-6"></i></button>
-                <h2 id="form-title" class="text-lg font-semibold">Laporan Baru</h2>
+                <h2 id="form-title" class="text-lg font-semibold">Catatan Baru</h2>
                 <button id="save-btn" onclick="saveReport()" class="text-[#007AFF] font-semibold hover:text-blue-700 disabled:opacity-50">Simpan</button>
             </div>
             
             <div class="p-4 overflow-y-auto flex-1">
+                <!-- Global Fields: Date & Time -->
                 <div class="flex gap-3 mb-4">
                     <div class="flex-1">
-                        <label class="block text-xs text-gray-500 mb-1 font-medium">Tanggal</label>
+                        <label class="block text-xs text-gray-500 mb-1 font-medium">Tanggal *</label>
                         <input type="date" id="input-date" required class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm outline-none focus:border-[#007AFF] text-gray-800" />
                     </div>
                     <div class="flex-1">
-                        <label class="block text-xs text-gray-500 mb-1 font-medium">Waktu / Jam</label>
+                        <label class="block text-xs text-gray-500 mb-1 font-medium">Waktu / Jam *</label>
                         <input type="time" id="input-time" required class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm outline-none focus:border-[#007AFF] text-gray-800" />
                     </div>
                 </div>
 
-                <div class="mb-4">
-                    <label class="block text-xs text-gray-500 mb-1 font-medium">Judul Laporan *</label>
-                    <input type="text" id="input-title" placeholder="Contoh: Rapat Evaluasi Proyek" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm outline-none focus:border-[#007AFF] text-gray-800 font-medium" />
+                <!-- Fields for Laporan Harian -->
+                <div id="form-laporan-fields" class="space-y-4 hidden">
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1 font-medium">Judul Laporan *</label>
+                        <input type="text" id="input-title" placeholder="Contoh: Rapat Evaluasi Proyek" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm outline-none focus:border-[#007AFF] text-gray-800 font-medium" />
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1 font-medium">Catatan / Deskripsi</label>
+                        <textarea id="input-text" placeholder="Detail kegiatan hari ini..." class="w-full h-32 bg-gray-50 border border-gray-200 rounded-xl p-3 resize-none outline-none text-sm text-gray-800 placeholder-gray-400 focus:border-[#007AFF]"></textarea>
+                    </div>
                 </div>
 
-                <label class="block text-xs text-gray-500 mb-1 font-medium">Catatan / Deskripsi</label>
-                <textarea id="input-text" placeholder="Detail kegiatan hari ini..." class="w-full h-32 bg-gray-50 border border-gray-200 rounded-xl p-3 resize-none outline-none text-sm text-gray-800 placeholder-gray-400 mb-4 focus:border-[#007AFF]"></textarea>
+                <!-- Fields for Akad Nikah -->
+                <div id="form-akad-fields" class="space-y-4 hidden">
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1 font-medium">Nama Catin Laki-laki *</label>
+                        <input type="text" id="input-catin-laki" placeholder="Contoh: Ahmad Rizky" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm outline-none focus:border-[#007AFF] text-gray-800 font-medium" />
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1 font-medium">Nama Catin Perempuan *</label>
+                        <input type="text" id="input-catin-perempuan" placeholder="Contoh: Siti Nurhaliza" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm outline-none focus:border-[#007AFF] text-gray-800 font-medium" />
+                    </div>
+                </div>
                 
-                <div id="image-preview-container" class="hidden mb-4">
-                    <label class="block text-xs text-gray-500 mb-2 font-medium">Lampiran Gambar</label>
+                <!-- Global Fields: Multiple Images -->
+                <div id="image-preview-container" class="hidden mt-4">
+                    <label class="block text-xs text-gray-500 mb-2 font-medium">Lampiran Gambar / Foto</label>
                     <div id="image-preview-list" class="flex gap-3 overflow-x-auto pb-2">
                         <!-- Previews injected here -->
                     </div>
                 </div>
             </div>
 
+            <!-- Upload Action Buttons -->
             <div class="p-4 bg-gray-50 border-t border-gray-100 flex gap-4">
                 <label class="flex items-center justify-center gap-2 flex-1 bg-white border border-gray-200 py-3 rounded-xl cursor-pointer hover:bg-gray-50 active:bg-gray-100 transition-colors text-gray-700 font-medium">
                     <i data-lucide="image" class="w-5 h-5 text-[#007AFF]"></i>
                     <span>Galeri</span>
                     <input type="file" accept="image/*" multiple onchange="handleImageUpload(event)" class="hidden" />
                 </label>
-                <!-- Atribut capture="environment" di sini akan memaksa browser HP membuka kamera belakang -->
                 <label class="flex items-center justify-center gap-2 flex-1 bg-white border border-gray-200 py-3 rounded-xl cursor-pointer hover:bg-gray-50 active:bg-gray-100 transition-colors text-gray-700 font-medium">
                     <i data-lucide="camera" class="w-5 h-5 text-[#007AFF]"></i>
                     <span>Kamera</span>
@@ -207,13 +262,13 @@
                 <div>
                     <h3 class="font-semibold text-gray-800 mb-3 border-b border-gray-100 pb-2">Sinkronisasi Data (.json)</h3>
                     <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                        <p class="text-xs text-gray-500 mb-4 leading-relaxed">Gunakan fitur ini untuk memindahkan, mencadangkan, atau memulihkan data catatan ke HP maupun PC lain.</p>
+                        <p class="text-xs text-gray-500 mb-4 leading-relaxed">Gunakan fitur ini untuk memindahkan, mencadangkan, atau memulihkan data ke HP maupun PC lain.</p>
                         <div class="flex gap-3">
                             <button onclick="exportJSON()" class="flex-1 py-2 bg-white border border-[#007AFF] text-[#007AFF] rounded-lg font-medium hover:bg-blue-50 transition-colors text-sm flex justify-center items-center gap-1">
-                                <i data-lucide="upload" class="w-4 h-4"></i> Export JSON
+                                <i data-lucide="upload" class="w-4 h-4"></i> Backup Data
                             </button>
                             <label class="flex-1 py-2 bg-[#007AFF] text-white rounded-lg font-medium hover:bg-blue-600 transition-colors text-sm cursor-pointer flex justify-center items-center gap-1">
-                                <i data-lucide="download" class="w-4 h-4"></i> Import JSON
+                                <i data-lucide="download" class="w-4 h-4"></i> Restore Data
                                 <input type="file" accept=".json" onchange="importJSON(event)" class="hidden" />
                             </label>
                         </div>
@@ -226,57 +281,46 @@
 
     <!-- Script Logic -->
     <script>
-        // --- 1. LOCAL STORAGE WRAPPER (Aman & Offline) ---
+        // --- 1. LOCAL STORAGE WRAPPER (Dynamic keys) ---
         const StorageDB = {
-            key: 'laporan_harian_data',
-            memData: [],
-            load() {
+            load(key) {
                 try {
-                    const data = localStorage.getItem(this.key);
-                    this.memData = data ? JSON.parse(data) : [];
+                    const data = localStorage.getItem(key);
+                    return data ? JSON.parse(data) : [];
                 } catch(e) {
-                    console.warn("Local storage tidak tersedia, menggunakan memori sementara.");
+                    console.warn("Local storage tidak tersedia.");
+                    return [];
                 }
-                return this.memData;
             },
-            save(data) {
-                this.memData = data;
+            save(key, data) {
                 try {
-                    localStorage.setItem(this.key, JSON.stringify(data));
+                    localStorage.setItem(key, JSON.stringify(data));
                 } catch(e) {}
             }
         };
 
         // --- 2. GLOBAL STATE ---
-        let reportsData = StorageDB.load();
+        let activeTab = 'laporan_harian'; // Default tab
+        let reportsData = [];
         let selectedIds = [];
         let isSelectionMode = false;
         let editingId = null;
         let currentImages = [];
+        let isUploading = false;
         
         let filterMonth = new Date().getMonth();
         let filterYear = new Date().getFullYear();
 
-        // --- 3. UTILS ---
+        // --- 3. UTILS & CORE ---
         const generateId = () => 'id_' + Math.random().toString(36).substr(2, 9);
-        
-        const formatDate = (ts) => {
-            if (!ts) return '-';
-            return new Date(ts).toLocaleString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-        };
-        
-        const escapeHTML = (str) => {
-            if (!str) return '';
-            return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag]));
-        };
-        
+        const formatDate = (ts) => new Date(ts).toLocaleString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        const escapeHTML = (str) => str ? str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag])) : '';
         const getLocalYMDHM = (ts) => {
             const d = new Date(ts);
             const tzOffset = d.getTimezoneOffset() * 60000;
             const localISOTime = (new Date(d.getTime() - tzOffset)).toISOString().slice(0, -1);
             return { date: localISOTime.split('T')[0], time: localISOTime.split('T')[1].slice(0, 5) };
         };
-        
         const showToast = (msg) => {
             const toast = document.getElementById('toast');
             toast.innerText = msg;
@@ -305,6 +349,45 @@
             });
         };
 
+        // --- SIDEBAR & NAVIGATION ---
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        }
+
+        function switchTab(tabId) {
+            activeTab = tabId;
+            
+            // Update active state di UI Sidebar
+            document.querySelectorAll('#sidebar nav button').forEach(btn => {
+                btn.className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left font-medium text-gray-600 hover:bg-gray-50 transition-all";
+            });
+            const activeBtn = document.getElementById(`tab-${tabId}`);
+            activeBtn.className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left font-semibold transition-all bg-[#007AFF]/10 text-[#007AFF]";
+            
+            // Update Header Title
+            document.getElementById('header-title').innerText = tabId === 'laporan_harian' ? 'Laporan Harian' : 'Akad Nikah';
+            
+            // Load fresh data for this tab
+            reportsData = StorageDB.load(activeTab);
+            
+            // Reset state
+            selectedIds = [];
+            isSelectionMode = false;
+            
+            // Re-render
+            initFilters();
+            renderReports();
+            
+            // Tutup sidebar di mobile setelah milih
+            if (window.innerWidth < 768) {
+                toggleSidebar();
+            }
+        }
+
+        // --- FILTERS ---
         function initFilters() {
             const yearSelect = document.getElementById('filter-year');
             const years = new Set([new Date().getFullYear(), filterYear]);
@@ -323,12 +406,12 @@
             renderReports();
         }
 
-        // --- 4. RENDER UI ---
+        // --- RENDER UI ---
         function renderReports() {
             const list = document.getElementById('reports-list');
             const emptyState = document.getElementById('empty-state');
             
-            // Terapkan Filter Bulan dan Tahun
+            // Apply Filters
             const filteredReports = reportsData.filter(report => {
                 const d = new Date(report.reportedAt);
                 return d.getMonth() === filterMonth && d.getFullYear() === filterYear;
@@ -356,26 +439,35 @@
                     </div>
                 `;
 
-                // Migration & Support for Multiple Images
+                // Handle Images HTML
                 const reportImages = report.images || (report.image ? [report.image] : []);
-                
-                let attachmentNotice = '';
                 let imageHTML = '';
-                
                 if (reportImages.length > 0) {
-                    if (!isSelectionMode) {
-                        attachmentNotice = `<div class="attachment-notice mt-2 text-xs text-[#007AFF] flex items-center gap-1 font-medium"><i data-lucide="image" class="w-3.5 h-3.5"></i> ${reportImages.length} Lampiran gambar</div>`;
-                    }
-                    
                     imageHTML = `<div class="grid grid-cols-2 gap-2 mb-4">`;
                     reportImages.forEach(imgSrc => {
-                        imageHTML += `<img src="${imgSrc}" alt="Laporan" class="w-full rounded-xl object-cover h-32 sm:h-48 border border-gray-100 shadow-sm" />`;
+                        imageHTML += `<img src="${imgSrc}" alt="Lampiran" class="w-full rounded-xl object-cover h-32 sm:h-48 border border-gray-100 shadow-sm" />`;
                     });
                     imageHTML += `</div>`;
                 }
 
-                const reportTitle = escapeHTML(report.title || 'Tanpa Judul');
-                const reportText = escapeHTML(report.text || '');
+                // Dynamic Content by Tab
+                let cardTitle, expandedContent;
+                if (activeTab === 'laporan_harian') {
+                    cardTitle = escapeHTML(report.title || 'Tanpa Judul');
+                    const textDesc = escapeHTML(report.text || '');
+                    expandedContent = `<div class="text-gray-800 text-sm whitespace-pre-wrap mb-4">${textDesc || "<span class='italic text-gray-400'>Tidak ada catatan</span>"}</div>`;
+                } else {
+                    const catinLaki = escapeHTML(report.catinLaki || '-');
+                    const catinPerempuan = escapeHTML(report.catinPerempuan || '-');
+                    cardTitle = `${catinLaki} & ${catinPerempuan}`;
+                    expandedContent = `
+                        <div class="mb-4 bg-gray-50 rounded-xl p-3 border border-gray-100">
+                            <div class="text-xs text-gray-500 mb-1">Mempelai Pria</div>
+                            <div class="font-semibold text-gray-800 mb-3">${catinLaki}</div>
+                            <div class="text-xs text-gray-500 mb-1">Mempelai Wanita</div>
+                            <div class="font-semibold text-gray-800">${catinPerempuan}</div>
+                        </div>`;
+                }
 
                 return `
                 <div class="report-card rounded-2xl shadow-sm border ${borderClass} overflow-hidden transition-all duration-200" data-id="${report.id}">
@@ -386,14 +478,14 @@
                                 <span class="text-xs font-medium text-gray-500 flex items-center gap-1"><i data-lucide="calendar" class="w-3 h-3"></i> ${timeStr}</span>
                                 ${!isSelectionMode ? `<i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 chevron-icon"></i>` : ''}
                             </div>
-                            <h3 class="font-bold text-gray-900 text-lg mb-0 line-clamp-1">${reportTitle}</h3>
+                            <h3 class="font-bold text-gray-900 text-lg mb-0 line-clamp-1">${cardTitle}</h3>
                         </div>
                     </div>
                     
                     <div class="accordion-grid">
                         <div class="accordion-inner">
                             <div class="px-4 pb-4 pt-2 border-t border-gray-50">
-                                <div class="text-gray-800 text-sm whitespace-pre-wrap mb-4">${reportText || "<span class='italic text-gray-400'>Tidak ada catatan</span>"}</div>
+                                ${expandedContent}
                                 ${imageHTML}
                                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mt-2">
                                     <div class="text-xs text-gray-400 space-y-1">
@@ -411,24 +503,21 @@
                 </div>`;
             }).join('');
             
-            // Reload icon setelah element ter-render
-            if (window.lucide) {
-                window.lucide.createIcons();
-            }
+            if (window.lucide) window.lucide.createIcons();
             
             // Toggle Bottom Bar
             const bar = document.getElementById('selection-bar');
             if (isSelectionMode) {
                 bar.classList.remove('hidden');
-                document.getElementById('selection-count').innerText = `${selectedIds.length} laporan dipilih`;
+                document.getElementById('selection-count').innerText = `${selectedIds.length} data dipilih`;
             } else { bar.classList.add('hidden'); }
         }
 
-        // --- 5. INITIALIZE APP & SORTABLE ---
+        // --- INITIALIZATION ---
+        // Panggil saat load pertama kali
+        reportsData = StorageDB.load(activeTab);
         initFilters();
-        if (window.lucide) {
-            window.lucide.createIcons();
-        }
+        if (window.lucide) window.lucide.createIcons();
         renderReports();
 
         // Setup Drag and Drop
@@ -439,17 +528,13 @@
             dragClass: 'sortable-drag',
             onEnd: function (evt) {
                 const newVisibleIds = Array.from(document.querySelectorAll('.report-card')).map(el => el.getAttribute('data-id'));
-                
-                // Ambil daftar yang tampil sebelum di-drag
                 const oldVisibleItems = reportsData.filter(r => {
                     const d = new Date(r.reportedAt);
                     return d.getMonth() === filterMonth && d.getFullYear() === filterYear;
                 });
                 
-                // Susun ulang hanya data yang tampil
                 const reorderedVisibleItems = newVisibleIds.map(id => oldVisibleItems.find(r => r.id === id));
 
-                // Masukkan kembali ke reportsData utama tanpa merusak data bulan/tahun lain
                 let visibleIdx = 0;
                 reportsData = reportsData.map(report => {
                     const d = new Date(report.reportedAt);
@@ -459,11 +544,11 @@
                     return report;
                 });
                 
-                StorageDB.save(reportsData);
+                StorageDB.save(activeTab, reportsData);
             }
         });
 
-        // --- 6. USER INTERACTIONS ---
+        // --- CARD ACCORDION ---
         function handleCardClick(id, el) {
             if (isSelectionMode) {
                 if (selectedIds.includes(id)) selectedIds = selectedIds.filter(i => i !== id);
@@ -491,16 +576,27 @@
             }
         }
 
-        // --- 7. FORM MODAL ---
+        // --- FORM MODAL ---
         const checkSaveBtn = () => {
             const btn = document.getElementById('save-btn');
-            const hasTitle = document.getElementById('input-title').value.trim();
             const hasTime = document.getElementById('input-date').value && document.getElementById('input-time').value;
-            // Judul sekarang diwajibkan untuk diisi
-            if (hasTitle && hasTime) btn.removeAttribute('disabled');
+            let isValid = false;
+
+            if (activeTab === 'laporan_harian') {
+                isValid = document.getElementById('input-title').value.trim() !== '';
+            } else {
+                isValid = (document.getElementById('input-catin-laki').value.trim() !== '') && 
+                          (document.getElementById('input-catin-perempuan').value.trim() !== '');
+            }
+
+            if (isValid && hasTime && !isUploading) btn.removeAttribute('disabled');
             else btn.setAttribute('disabled', 'true');
         };
+
+        // Attach listeners for validation
         document.getElementById('input-title').addEventListener('input', checkSaveBtn);
+        document.getElementById('input-catin-laki').addEventListener('input', checkSaveBtn);
+        document.getElementById('input-catin-perempuan').addEventListener('input', checkSaveBtn);
         document.getElementById('input-date').addEventListener('input', checkSaveBtn);
         document.getElementById('input-time').addEventListener('input', checkSaveBtn);
 
@@ -527,17 +623,31 @@
 
         function openFormModal(report = null) {
             editingId = report ? report.id : null;
-            document.getElementById('form-title').innerText = report ? "Edit Laporan" : "Laporan Baru";
+            document.getElementById('form-title').innerText = report ? "Edit Data" : "Tambah Data";
             
-            document.getElementById('input-title').value = report ? (report.title || '') : '';
-            document.getElementById('input-text').value = report ? (report.text || '') : '';
+            // Setup Fields visibility
+            if (activeTab === 'laporan_harian') {
+                document.getElementById('form-laporan-fields').classList.remove('hidden');
+                document.getElementById('form-akad-fields').classList.add('hidden');
+                
+                document.getElementById('input-title').value = report ? (report.title || '') : '';
+                document.getElementById('input-text').value = report ? (report.text || '') : '';
+            } else {
+                document.getElementById('form-laporan-fields').classList.add('hidden');
+                document.getElementById('form-akad-fields').classList.remove('hidden');
+                
+                document.getElementById('input-catin-laki').value = report ? (report.catinLaki || '') : '';
+                document.getElementById('input-catin-perempuan').value = report ? (report.catinPerempuan || '') : '';
+            }
             
+            // Setup Date & Time
             const ts = report ? report.reportedAt : Date.now();
             const { date, time } = getLocalYMDHM(ts);
             document.getElementById('input-date').value = date;
             document.getElementById('input-time').value = time;
             
-            currentImages = report ? (report.images || (report.image ? [report.image] : [])) : [];
+            // Setup Images
+            currentImages = report ? [...(report.images || (report.image ? [report.image] : []))] : [];
             renderImagePreviewList();
             
             checkSaveBtn();
@@ -552,19 +662,24 @@
             const files = event.target.files;
             if (!files || files.length === 0) return;
             
+            isUploading = true;
+            checkSaveBtn(); 
+            const saveBtn = document.getElementById('save-btn');
+            saveBtn.innerText = "Memproses...";
+            
             for (let i = 0; i < files.length; i++) {
                 try {
                     const base64 = await compressImageAsync(files[i]);
                     currentImages.push(base64);
+                    renderImagePreviewList();
                 } catch (e) {
                     console.error("Gagal memproses gambar", e);
                 }
             }
             
-            renderImagePreviewList();
+            isUploading = false;
+            saveBtn.innerText = "Simpan";
             checkSaveBtn();
-            
-            // Reset input value so the same files can be selected again if needed
             event.target.value = '';
         }
         
@@ -575,38 +690,46 @@
         }
 
         function saveReport() {
-            const title = document.getElementById('input-title').value.trim();
-            const text = document.getElementById('input-text').value.trim();
             const dateStr = document.getElementById('input-date').value;
             const timeStr = document.getElementById('input-time').value;
-            
-            if (!title) return showToast("Judul wajib diisi.");
             if (!dateStr || !timeStr) return showToast("Tanggal dan waktu wajib diisi.");
             
             const reportedAt = new Date(`${dateStr}T${timeStr}`).getTime();
+            let newData = { reportedAt, images: [...currentImages], updatedAt: editingId ? Date.now() : null };
             
+            if (activeTab === 'laporan_harian') {
+                const title = document.getElementById('input-title').value.trim();
+                const text = document.getElementById('input-text').value.trim();
+                if (!title) return showToast("Judul wajib diisi.");
+                newData = { ...newData, title, text };
+            } else {
+                const catinLaki = document.getElementById('input-catin-laki').value.trim();
+                const catinPerempuan = document.getElementById('input-catin-perempuan').value.trim();
+                if (!catinLaki || !catinPerempuan) return showToast("Nama kedua catin wajib diisi.");
+                newData = { ...newData, catinLaki, catinPerempuan };
+            }
+
             if (editingId) {
                 const idx = reportsData.findIndex(r => r.id === editingId);
                 if (idx > -1) {
-                    reportsData[idx] = { ...reportsData[idx], title, text, images: [...currentImages], reportedAt, updatedAt: Date.now() };
+                    reportsData[idx] = { ...reportsData[idx], ...newData };
                 }
             } else {
-                const newReport = { id: generateId(), title, text, images: [...currentImages], reportedAt, updatedAt: null };
-                
+                newData.id = generateId();
                 let inserted = false;
                 for (let i = 0; i < reportsData.length; i++) {
-                    if (newReport.reportedAt >= reportsData[i].reportedAt) {
-                        reportsData.splice(i, 0, newReport);
+                    if (newData.reportedAt >= reportsData[i].reportedAt) {
+                        reportsData.splice(i, 0, newData);
                         inserted = true;
                         break;
                     }
                 }
-                if (!inserted) reportsData.push(newReport);
+                if (!inserted) reportsData.push(newData);
             }
             
-            StorageDB.save(reportsData);
+            StorageDB.save(activeTab, reportsData);
             
-            // Pindahkan filter otomatis ke bulan/tahun catatan yang baru disave
+            // Update filter agar item yang baru masuk terlihat
             const savedDate = new Date(reportedAt);
             filterMonth = savedDate.getMonth();
             filterYear = savedDate.getFullYear();
@@ -614,7 +737,7 @@
             
             closeFormModal();
             renderReports();
-            showToast("Laporan berhasil disimpan!");
+            showToast("Data berhasil disimpan!");
         }
 
         function editReport(id) {
@@ -623,23 +746,25 @@
         }
 
         function deleteReport(id) {
-            if (confirm("Hapus laporan ini secara permanen?")) {
+            if (confirm("Hapus data ini secara permanen?")) {
                 reportsData = reportsData.filter(r => r.id !== id);
-                StorageDB.save(reportsData);
+                StorageDB.save(activeTab, reportsData);
                 renderReports();
-                showToast("Laporan dihapus.");
+                showToast("Data dihapus.");
             }
         }
 
-        // --- 8. EXPORT TO WORD ---
+        // --- EXPORT TO WORD ---
         function openExportModal() { document.getElementById('export-modal').classList.remove('hidden'); }
         function closeExportModal() { document.getElementById('export-modal').classList.add('hidden'); }
 
         function generateWordDoc(reportsToExport) {
             if (reportsToExport.length === 0) return;
+            const docTitle = activeTab === 'laporan_harian' ? 'Rekap Laporan Harian' : 'Rekap Akad Nikah';
+            
             let htmlContent = `
                 <div style="font-family: Arial, sans-serif;">
-                <h2 style="text-align: center;">Rekap Laporan Harian</h2>
+                <h2 style="text-align: center;">${docTitle}</h2>
                 <hr style="border: 1px solid #ccc; margin-bottom: 20px;" />
             `;
             
@@ -647,14 +772,18 @@
 
             sorted.forEach((report) => {
                 const reportImages = report.images || (report.image ? [report.image] : []);
-                const reportTitle = escapeHTML(report.title || 'Tanpa Judul');
-
-                htmlContent += `
-                <div style="margin-bottom: 30px; padding-bottom: 15px; border-bottom: 1px solid #eaeaea;">
-                    <p style="color: #666; font-size: 14px; margin-bottom: 5px;"><strong>Waktu:</strong> ${formatDate(report.reportedAt)}</p>
-                    <h3 style="margin-top: 0; color: #333;">${reportTitle}</h3>
-                    <p style="font-size: 14px; line-height: 1.6; white-space: pre-wrap;">${escapeHTML(report.text)}</p>
-                `;
+                
+                htmlContent += `<div style="margin-bottom: 30px; padding-bottom: 15px; border-bottom: 1px solid #eaeaea;">`;
+                htmlContent += `<p style="color: #666; font-size: 14px; margin-bottom: 5px;"><strong>Waktu:</strong> ${formatDate(report.reportedAt)}</p>`;
+                
+                if (activeTab === 'laporan_harian') {
+                    const rTitle = escapeHTML(report.title || 'Tanpa Judul');
+                    htmlContent += `<h3 style="margin-top: 0; color: #333;">${rTitle}</h3>`;
+                    htmlContent += `<p style="font-size: 14px; line-height: 1.6; white-space: pre-wrap;">${escapeHTML(report.text)}</p>`;
+                } else {
+                    htmlContent += `<p style="font-size: 16px; margin: 10px 0;"><strong>Mempelai Pria:</strong> ${escapeHTML(report.catinLaki)}</p>`;
+                    htmlContent += `<p style="font-size: 16px; margin: 10px 0;"><strong>Mempelai Wanita:</strong> ${escapeHTML(report.catinPerempuan)}</p>`;
+                }
                 
                 if (reportImages.length > 0) {
                     htmlContent += `<div style="margin-top: 10px;">`;
@@ -663,17 +792,16 @@
                     });
                     htmlContent += `</div>`;
                 }
-                
                 htmlContent += `</div>`;
             });
             htmlContent += `</div>`;
 
-            const header = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>Rekap Laporan</title></head><body>";
+            const header = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>Rekap</title></head><body>";
             const source = 'data:application/vnd.ms-word;charset=utf-8,' + encodeURIComponent(header + htmlContent + "</body></html>");
             
             const link = document.createElement("a");
             link.href = source;
-            link.download = `Rekap_Laporan_${new Date().getTime()}.doc`;
+            link.download = `${docTitle}_${new Date().getTime()}.doc`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -688,7 +816,7 @@
             const tsEnd = new Date(end).setHours(23, 59, 59, 999);
             
             const filtered = reportsData.filter(r => r.reportedAt >= tsStart && r.reportedAt <= tsEnd);
-            if (filtered.length === 0) return showToast("Tidak ada laporan di tanggal tersebut.");
+            if (filtered.length === 0) return showToast("Tidak ada data di tanggal tersebut.");
             
             generateWordDoc(filtered);
             closeExportModal();
@@ -710,24 +838,23 @@
         }
 
         function exportSelected() {
-            if (selectedIds.length === 0) return showToast("Pilih minimal 1 laporan!");
+            if (selectedIds.length === 0) return showToast("Pilih minimal 1 data!");
             const filtered = reportsData.filter(r => selectedIds.includes(r.id));
             generateWordDoc(filtered);
             cancelSelection();
-            showToast("Laporan terpilih diekspor!");
+            showToast("Data terpilih diekspor!");
         }
 
-        // --- 9. EXPORT & IMPORT JSON (SINKRONISASI) ---
+        // --- EXPORT & IMPORT JSON (SINKRONISASI) ---
         function exportJSON() {
             if (reportsData.length === 0) return showToast("Tidak ada data untuk di-export.");
-            
             const dataStr = JSON.stringify(reportsData, null, 2);
             const blob = new Blob([dataStr], { type: "application/json" });
             const url = URL.createObjectURL(blob);
             
             const link = document.createElement("a");
             link.href = url;
-            link.download = `Backup_Laporan_Harian_${new Date().getTime()}.json`;
+            link.download = `Backup_${activeTab}_${new Date().getTime()}.json`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -747,40 +874,32 @@
                     const importedData = JSON.parse(e.target.result);
                     if (!Array.isArray(importedData)) throw new Error("Format file JSON tidak valid.");
                     
-                    let newCount = 0;
-                    let updateCount = 0;
+                    let newCount = 0, updateCount = 0;
 
                     importedData.forEach(item => {
                         if (item.id && item.reportedAt) {
                             const existingIdx = reportsData.findIndex(r => r.id === item.id);
                             if (existingIdx > -1) {
-                                // Timpa data jika id sama (menghindari duplikasi)
                                 reportsData[existingIdx] = { ...reportsData[existingIdx], ...item };
                                 updateCount++;
                             } else {
-                                // Tambahkan sebagai data baru
                                 reportsData.push(item);
                                 newCount++;
                             }
                         }
                     });
 
-                    // Jika ada data masuk, kita urutkan secara default (terbaru di atas) agar tidak berantakan
-                    if (newCount > 0) {
-                        reportsData.sort((a, b) => b.reportedAt - a.reportedAt);
-                    }
-
-                    StorageDB.save(reportsData);
-                    initFilters(); // Perbarui dropdown filter tahun 
+                    if (newCount > 0) reportsData.sort((a, b) => b.reportedAt - a.reportedAt);
+                    
+                    StorageDB.save(activeTab, reportsData);
+                    initFilters(); 
                     renderReports();
                     closeExportModal();
                     showToast(`Sinkronisasi selesai! ${newCount} baru, ${updateCount} diperbarui.`);
                 } catch (err) {
                     console.error(err);
-                    alert("Gagal mengimpor data. Pastikan file JSON yang dipilih adalah backup valid dari aplikasi ini.");
+                    alert("Gagal mengimpor data. Pastikan file JSON yang dipilih adalah backup valid.");
                 }
-                
-                // Reset input agar pengguna dapat mengimpor file yang sama lagi jika perlu
                 event.target.value = '';
             };
             reader.readAsText(file);
