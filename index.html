@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="author" content="@ikmalogic @ikmalkua">
     <title>Sistem Pencatatan</title>
     
     <!-- Google Fonts: Space Grotesk -->
@@ -163,6 +164,14 @@
         <div class="w-full md:max-w-3xl lg:max-w-5xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-3">
             <span id="selection-count" class="font-medium text-gray-700">0 data dipilih</span>
             <div class="flex gap-2 items-center w-full sm:w-auto">
+                <label class="flex items-center gap-1.5 cursor-pointer text-sm font-medium text-gray-600 bg-gray-50 px-3 py-2 rounded-lg border border-gray-200 hover:bg-gray-100" title="Sertakan Judul">
+                    <input type="checkbox" id="export-include-title-bar" checked class="w-4 h-4 accent-[#007AFF] cursor-pointer">
+                    <i data-lucide="heading" class="w-4 h-4"></i>
+                </label>
+                <label class="flex items-center gap-1.5 cursor-pointer text-sm font-medium text-gray-600 bg-gray-50 px-3 py-2 rounded-lg border border-gray-200 hover:bg-gray-100" title="Sertakan Gambar">
+                    <input type="checkbox" id="export-include-images-bar" checked class="w-4 h-4 accent-[#007AFF] cursor-pointer">
+                    <i data-lucide="image" class="w-4 h-4"></i>
+                </label>
                 <select id="export-format-bar" class="flex-1 sm:flex-none bg-gray-50 border border-gray-200 rounded-lg p-2 text-sm outline-none focus:border-[#007AFF] text-gray-800 font-medium">
                     <option value="table">Tabel</option>
                     <option value="text">Tanpa Tabel</option>
@@ -440,6 +449,17 @@
                         </select>
                     </div>
 
+                    <div class="mb-3 bg-gray-50 p-3 rounded-xl border border-gray-100 flex flex-col gap-3">
+                        <label class="flex items-center gap-2 cursor-pointer text-sm font-medium text-gray-700">
+                            <input type="checkbox" id="export-include-images" checked class="w-4 h-4 accent-[#007AFF] cursor-pointer">
+                            Sertakan Lampiran Gambar saat Export
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer text-sm font-medium text-gray-700">
+                            <input type="checkbox" id="export-include-title" checked class="w-4 h-4 accent-[#007AFF] cursor-pointer">
+                            Sertakan Judul Laporan saat Export
+                        </label>
+                    </div>
+
                     <div class="bg-gray-50 p-4 rounded-xl border border-gray-100 mb-3">
                         <h4 class="font-medium text-gray-800 mb-3 flex items-center gap-2"><i data-lucide="calendar" class="w-4 h-4 text-[#007AFF]"></i> Rekap Rentang Waktu</h4>
                         <div class="flex gap-2 items-center mb-3">
@@ -548,7 +568,6 @@
             });
         };
 
-        // --- STREAMING_CHUNK:Implementing UI Navigation (Sidebar and Tabs)... ---
         // --- SIDEBAR & NAVIGATION ---
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
@@ -861,7 +880,6 @@
             } else { bar.classList.add('hidden'); }
         }
 
-        // --- STREAMING_CHUNK:Initialization and Drag-and-Drop Setup... ---
         // --- INITIALIZATION ---
         // Panggil saat load pertama kali
         reportsData = StorageDB.load(activeTab);
@@ -929,7 +947,6 @@
             }
         }
 
-        // --- STREAMING_CHUNK:Implementing Modal Validation and Data Handling... ---
         // --- FORM MODAL ---
         const checkSaveBtn = () => {
             const btn = document.getElementById('save-btn');
@@ -1107,7 +1124,6 @@
             document.getElementById('form-modal').classList.add('hidden'); 
         }
 
-        // --- STREAMING_CHUNK:Implementing Image Uploading... ---
         async function handleImageUpload(event) {
             const files = event.target.files;
             if (!files || files.length === 0) return;
@@ -1139,7 +1155,6 @@
             checkSaveBtn();
         }
 
-        // --- STREAMING_CHUNK:Implementing Database Saving Mechanism... ---
         function saveReport() {
             const dateStr = document.getElementById('input-date').value;
             const timeStr = document.getElementById('input-time').value;
@@ -1256,12 +1271,11 @@
             }
         }
 
-        // --- STREAMING_CHUNK:Implementing Export to Microsoft Word Logic... ---
         // --- EXPORT TO WORD ---
         function openExportModal() { document.getElementById('export-modal').classList.remove('hidden'); }
         function closeExportModal() { document.getElementById('export-modal').classList.add('hidden'); }
 
-        function generateWordDoc(reportsToExport, useTable) {
+        function generateWordDoc(reportsToExport, useTable, includeImages = true, includeTitle = true) {
             if (reportsToExport.length === 0) return;
             const docTitle = activeTab === 'laporan_harian' ? 'Rekap Laporan Harian' : (activeTab === 'akad_nikah' ? 'Rekap Akad Nikah' : (activeTab === 'surat_keluar' ? 'Rekap Surat Keluar' : (activeTab === 'surat_masuk' ? 'Rekap Surat Masuk' : (activeTab === 'catatan' ? 'Rekap Catatan' : 'Rekap Inventaris KUA'))));
             
@@ -1299,7 +1313,7 @@
                         
                         let imageHTML = '';
                         const reportImages = report.images || (report.image ? [report.image] : []);
-                        if (reportImages.length > 0) {
+                        if (reportImages.length > 0 && includeImages) {
                             imageHTML += `<div style="margin-top: 8px;">`;
                             reportImages.forEach(imgSrc => {
                                 imageHTML += `<img src="${imgSrc}" style="max-width: 120px; max-height: 120px; margin-right: 5px; margin-bottom: 5px; display: inline-block;" />`;
@@ -1307,7 +1321,9 @@
                             imageHTML += `</div>`;
                         }
 
-                        const uraianContent = `<strong style="color: #444;">[${timeStr}] ${rTitle}</strong><br/><br/>${uraian}`;
+                        const uraianContent = includeTitle 
+                            ? `<strong style="color: #444;">[${timeStr}] ${rTitle}</strong><br/><br/>${uraian}` 
+                            : uraian;
 
                         htmlContent += `
                             <tr>
@@ -1341,7 +1357,7 @@
                         
                         let imageHTML = '';
                         const reportImages = report.images || (report.image ? [report.image] : []);
-                        if (reportImages.length > 0) {
+                        if (reportImages.length > 0 && includeImages) {
                             imageHTML += `<div style="margin-top: 8px;">`;
                             reportImages.forEach(imgSrc => {
                                 imageHTML += `<img src="${imgSrc}" style="max-width: 100px; max-height: 100px; margin-right: 5px; margin-bottom: 5px; display: inline-block;" />`;
@@ -1394,7 +1410,7 @@
                         
                         let imageHTML = '';
                         const reportImages = report.images || (report.image ? [report.image] : []);
-                        if (reportImages.length > 0) {
+                        if (reportImages.length > 0 && includeImages) {
                             imageHTML += `<div style="margin-top: 8px;">`;
                             reportImages.forEach(imgSrc => {
                                 imageHTML += `<img src="${imgSrc}" style="max-width: 100px; max-height: 100px; margin-right: 5px; margin-bottom: 5px; display: inline-block;" />`;
@@ -1444,7 +1460,7 @@
                         
                         let imageHTML = '';
                         const reportImages = report.images || (report.image ? [report.image] : []);
-                        if (reportImages.length > 0) {
+                        if (reportImages.length > 0 && includeImages) {
                             imageHTML += `<div style="margin-top: 8px;">`;
                             reportImages.forEach(imgSrc => {
                                 imageHTML += `<img src="${imgSrc}" style="max-width: 100px; max-height: 100px; margin-right: 5px; margin-bottom: 5px; display: inline-block;" />`;
@@ -1492,7 +1508,7 @@
                         
                         let imageHTML = '';
                         const reportImages = report.images || (report.image ? [report.image] : []);
-                        if (reportImages.length > 0) {
+                        if (reportImages.length > 0 && includeImages) {
                             imageHTML += `<div style="margin-top: 8px;">`;
                             reportImages.forEach(imgSrc => {
                                 imageHTML += `<img src="${imgSrc}" style="max-width: 100px; max-height: 100px; margin-right: 5px; margin-bottom: 5px; display: inline-block;" />`;
@@ -1541,7 +1557,7 @@
                         
                         let imageHTML = '';
                         const reportImages = report.images || (report.image ? [report.image] : []);
-                        if (reportImages.length > 0) {
+                        if (reportImages.length > 0 && includeImages) {
                             imageHTML += `<div style="margin-top: 8px;">`;
                             reportImages.forEach(imgSrc => {
                                 imageHTML += `<img src="${imgSrc}" style="max-width: 100px; max-height: 100px; margin-right: 5px; margin-bottom: 5px; display: inline-block;" />`;
@@ -1569,7 +1585,7 @@
                     const timeStr = formatDate(report.reportedAt);
                     const reportImages = report.images || (report.image ? [report.image] : []);
                     let imageHTML = '';
-                    if (reportImages.length > 0) {
+                    if (reportImages.length > 0 && includeImages) {
                         imageHTML += `<div style="margin-top: 10px;">`;
                         reportImages.forEach(imgSrc => {
                             imageHTML += `<img src="${imgSrc}" style="max-width: 100%; max-height: 400px; margin-bottom: 10px; display: block;" />`;
@@ -1586,7 +1602,9 @@
                         const volume = escapeHTML(report.volume || '-');
                         const bukti = escapeHTML(report.bukti || '-');
 
-                        htmlContent += `<h3 style="margin-top: 0; color: #333;">${rTitle}</h3>`;
+                        if (includeTitle) {
+                            htmlContent += `<h3 style="margin-top: 0; color: #333;">${rTitle}</h3>`;
+                        }
                         htmlContent += `<p style="font-size: 14px; line-height: 1.6; margin-bottom: 10px; white-space: pre-wrap;"><strong>Uraian Tugas/Kegiatan:</strong><br/>${uraian}</p>`;
                         htmlContent += `<p style="font-size: 14px; margin: 5px 0;"><strong>Volume:</strong> ${volume}</p>`;
                         htmlContent += `<p style="font-size: 14px; margin: 5px 0;"><strong>Bukti Dukung:</strong> ${bukti}</p>`;
@@ -1701,7 +1719,9 @@
             if (filtered.length === 0) return showToast("Tidak ada data di tanggal tersebut.");
             
             const useTable = document.getElementById('export-format').value === 'table';
-            generateWordDoc(filtered, useTable);
+            const includeImages = document.getElementById('export-include-images').checked;
+            const includeTitle = document.getElementById('export-include-title').checked;
+            generateWordDoc(filtered, useTable, includeImages, includeTitle);
             closeExportModal();
             showToast("Berhasil diekspor!");
         }
@@ -1725,13 +1745,14 @@
             const filtered = reportsData.filter(r => selectedIds.includes(r.id));
             
             const useTable = document.getElementById('export-format-bar').value === 'table';
-            generateWordDoc(filtered, useTable);
+            const includeImages = document.getElementById('export-include-images-bar').checked;
+            const includeTitle = document.getElementById('export-include-title-bar').checked;
+            generateWordDoc(filtered, useTable, includeImages, includeTitle);
             
             cancelSelection();
             showToast("Data terpilih diekspor!");
         }
 
-        // --- STREAMING_CHUNK:Implementing Database JSON Backup and Restore... ---
         // --- EXPORT & IMPORT JSON (ADVANCED SYNC) ---
         
         // Fungsi pembantu untuk menggabung data (Merge)
